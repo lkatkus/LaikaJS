@@ -1,0 +1,31 @@
+{
+  "name": "laikajs",
+  "version": "0.0.1",
+  "description": "Simple JavaScript game engine for 2D games",
+  "main": "index.js",
+  "scripts": {
+    "test": "eslint src"
+  },
+  "pre-commit": [
+    "test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lkatkus/LaikaJS.git"
+  },
+  "keywords": [
+    "game",
+    "javascript",
+    "2d",
+    "game-engine",
+    "sidescroller"
+  ],
+  "author": "Laimonas Katkus",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^7.3.1",
+    "pre-commit": "^1.2.2"
+  },
+  "dependencies": {}
+}

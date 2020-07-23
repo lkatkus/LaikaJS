@@ -19,9 +19,10 @@ class Entity {
     /** Movement params */
     this.isMoving = false;
     this.direction = 'right';
-    this.speedX = config.movement.speedX;
-    this.speedY = config.movement.speedY;
-
+    this.speedXOffset = config.movement.speedX;
+    this.speedYOffset = config.movement.speedY;
+    this.speedX = Math.floor(levelRef.TILE_SIZE / this.speedXOffset);
+    this.speedY = Math.floor(levelRef.TILE_SIZE / this.speedYOffset);
     /** Used to handle player animations */
     this.colOffsetInterval = setInterval(() => {
       this.tileColOffset =
@@ -38,8 +39,8 @@ class Entity {
   resetPosition(tileSize) {
     this.x = Math.floor(this.col * tileSize);
     this.y = Math.floor(this.row * tileSize);
-    this.speedX = Math.floor(tileSize / 12);
-    this.speedY = Math.floor(tileSize / 12);
+    this.speedX = Math.floor(tileSize / this.speedXOffset);
+    this.speedY = Math.floor(tileSize / this.speedYOffset);
   }
 
   draw(tileSize) {

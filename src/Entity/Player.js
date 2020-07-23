@@ -29,82 +29,64 @@ class Player extends Entity {
 
     const touchEvents = {};
 
-    document.addEventListener(
-      'touchstart',
-      (event) => {
-        event.preventDefault();
+    document.addEventListener('touchstart', (event) => {
+      touchEvents.startX = event.targetTouches[0].screenX;
+      touchEvents.startY = event.targetTouches[0].screenY;
+    });
 
-        touchEvents.startX = event.targetTouches[0].screenX;
-        touchEvents.startY = event.targetTouches[0].screenY;
-      },
-      { passive: false }
-    );
+    document.addEventListener('touchmove', (event) => {
+      touchEvents.moveX = event.targetTouches[0].screenX;
+      touchEvents.moveY = event.targetTouches[0].screenY;
+      let changeX = Math.abs(touchEvents.startX - touchEvents.moveX);
+      let changeY = Math.abs(touchEvents.startY - touchEvents.moveY);
 
-    document.addEventListener(
-      'touchmove',
-      (event) => {
-        event.preventDefault();
-
-        touchEvents.moveX = event.targetTouches[0].screenX;
-        touchEvents.moveY = event.targetTouches[0].screenY;
-        let changeX = Math.abs(touchEvents.startX - touchEvents.moveX);
-        let changeY = Math.abs(touchEvents.startY - touchEvents.moveY);
-
-        if (changeX >= changeY && changeX > 30) {
-          if (touchEvents.startX > touchEvents.moveX) {
-            this.moveStart(MOVEMENT_DIRECTION.left);
-          }
-          if (touchEvents.startX < touchEvents.moveX) {
-            this.moveStart(MOVEMENT_DIRECTION.right);
-          }
-        } else if (changeX >= changeY && changeX < 30) {
-          if (touchEvents.startX > touchEvents.moveX) {
-            this.moveEnd(MOVEMENT_DIRECTION.left);
-          } else if (touchEvents.startX < touchEvents.moveX) {
-            this.moveEnd(MOVEMENT_DIRECTION.right);
-          }
+      if (changeX >= changeY && changeX > 30) {
+        if (touchEvents.startX > touchEvents.moveX) {
+          this.moveStart(MOVEMENT_DIRECTION.left);
         }
-
-        if (changeY >= changeX && changeY > 30) {
-          if (touchEvents.startY > touchEvents.moveY) {
-            this.moveStart(MOVEMENT_DIRECTION.up);
-          } else if (touchEvents.startY < touchEvents.moveY) {
-            this.moveStart(MOVEMENT_DIRECTION.down);
-          }
-        } else if (changeY >= changeX && changeY < 30) {
-          if (touchEvents.startY > touchEvents.moveY) {
-            this.moveEnd(MOVEMENT_DIRECTION.up);
-          } else if (touchEvents.startY < touchEvents.moveY) {
-            this.moveEnd(MOVEMENT_DIRECTION.down);
-          }
+        if (touchEvents.startX < touchEvents.moveX) {
+          this.moveStart(MOVEMENT_DIRECTION.right);
         }
-      },
-      { passive: false }
-    );
-
-    document.addEventListener(
-      'touchend',
-      () => {
-        event.preventDefault();
-
+      } else if (changeX >= changeY && changeX < 30) {
         if (touchEvents.startX > touchEvents.moveX) {
           this.moveEnd(MOVEMENT_DIRECTION.left);
-        }
-
-        if (touchEvents.startX < touchEvents.moveX) {
+        } else if (touchEvents.startX < touchEvents.moveX) {
           this.moveEnd(MOVEMENT_DIRECTION.right);
         }
+      }
 
+      if (changeY >= changeX && changeY > 30) {
+        if (touchEvents.startY > touchEvents.moveY) {
+          this.moveStart(MOVEMENT_DIRECTION.up);
+        } else if (touchEvents.startY < touchEvents.moveY) {
+          this.moveStart(MOVEMENT_DIRECTION.down);
+        }
+      } else if (changeY >= changeX && changeY < 30) {
         if (touchEvents.startY > touchEvents.moveY) {
           this.moveEnd(MOVEMENT_DIRECTION.up);
-        }
-
-        if (touchEvents.startY < touchEvents.moveY) {
+        } else if (touchEvents.startY < touchEvents.moveY) {
           this.moveEnd(MOVEMENT_DIRECTION.down);
         }
-      },
-      { passive: false }
-    );
+      }
+    });
+
+    document.addEventListener('touchend', () => {
+      if (touchEvents.startX > touchEvents.moveX) {
+        this.moveEnd(MOVEMENT_DIRECTION.left);
+      }
+
+      if (touchEvents.startX < touchEvents.moveX) {
+        this.moveEnd(MOVEMENT_DIRECTION.right);
+      }
+
+      if (touchEvents.startY > touchEvents.moveY) {
+        this.moveEnd(MOVEMENT_DIRECTION.up);
+      }
+
+      if (touchEvents.startY < touchEvents.moveY) {
+        this.moveEnd(MOVEMENT_DIRECTION.down);
+      }
+    });
   }
 
   enableControls() {

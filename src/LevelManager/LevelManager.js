@@ -16,6 +16,7 @@ class LevelManager {
       spawnMarker: this.spawnMarker,
       tileSheetCols: config.tileSheet.cols,
       spriteSize: this.spriteSize,
+      nonTextureTiles: this.tileTypes.nonTexture,
     });
 
     this.setTileSize();

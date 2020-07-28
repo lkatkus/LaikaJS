@@ -3,9 +3,14 @@ class LevelTextureManager {
     this.spawnMarker = config.spawnMarker;
     this.tileSheetCols = config.tileSheetCols;
     this.spriteSize = config.spriteSize;
+    this.nonTextureTiles = config.nonTextureTiles || [];
   }
 
   getTexture(type) {
+    if (this.nonTextureTiles.includes(type)) {
+      return 0;
+    }
+
     const adjustedType = type - 1;
     const sourceRow = Math.floor(adjustedType / this.tileSheetCols);
     const sourceCol = adjustedType - sourceRow * this.tileSheetCols;
@@ -14,10 +19,6 @@ class LevelTextureManager {
       x: sourceCol * this.spriteSize,
       y: sourceRow * this.spriteSize,
     };
-
-    if (type === this.spawnMarker) {
-      return 0;
-    }
 
     return textureCoordinates;
   }

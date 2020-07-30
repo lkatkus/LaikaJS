@@ -2,9 +2,8 @@ import LevelTextureManager from './LevelTextureManager';
 import LevelTile from './LevelTile';
 
 class LevelManager {
-  constructor(canvas, canvasContext, config) {
+  constructor(canvas, config) {
     this.canvas = canvas;
-    this.context = canvasContext;
 
     this.spawnMarker = config.spawnMarker;
     this.levelLayout = config.layout;
@@ -113,7 +112,7 @@ class LevelManager {
     this.visibleBottomRow = bottomRow;
   }
 
-  draw(newOffsetX, newOffsetY) {
+  draw(context, newOffsetX, newOffsetY) {
     if (
       this.cameraOffsetX !== newOffsetX ||
       this.cameraOffsetY !== newOffsetY
@@ -124,10 +123,10 @@ class LevelManager {
       this.updateVisibleTiles();
     }
 
-    this.drawTiles();
+    this.drawTiles(context);
   }
 
-  drawTiles() {
+  drawTiles(context) {
     this.tileContainer.forEach((tileRow, rowIndex) => {
       if (rowIndex > this.visibleTopRow && rowIndex < this.visibleBottomRow) {
         tileRow.forEach((tile, colIndex) => {
@@ -135,7 +134,7 @@ class LevelManager {
             colIndex > this.visibleLeftCol &&
             colIndex < this.visibleRightCol
           ) {
-            this.context.drawImage(
+            context.drawImage(
               this.textureSheet,
               tile.texture.x,
               tile.texture.y,

@@ -7,8 +7,8 @@ import {
 } from './Player.constants';
 
 class Player extends Entity {
-  constructor(canvasContext, level, config) {
-    super(canvasContext, level, level.initialPlayerLocation, config);
+  constructor(level, config) {
+    super(level, level.initialPlayerLocation, config);
     this.canFly = false;
 
     this.setControls();

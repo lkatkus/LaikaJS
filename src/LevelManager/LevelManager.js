@@ -3,8 +3,6 @@ import LevelTile from './LevelTile';
 
 class LevelManager {
   constructor(canvas, config) {
-    this.canvas = canvas;
-
     this.spawnMarker = config.spawnMarker;
     this.levelLayout = config.layout;
     this.spriteSize = config.tileSheet.spriteSize;
@@ -18,7 +16,7 @@ class LevelManager {
       nonTextureTiles: this.tileTypes.nonTexture,
     });
 
-    this.setTileSize();
+    this.setTileSize(canvas);
     this.setTileContainer();
 
     this.loadingHandler = new Promise((resolve) => {
@@ -28,27 +26,27 @@ class LevelManager {
     });
   }
 
-  setTileSize() {
+  setTileSize(canvas) {
     // TODO add check to check if new TILE_SIZE !== CURRENT_TILE_SIZE
-    if (this.canvas.width / this.canvas.height < 1) {
-      this.TILE_SIZE = Math.ceil(this.canvas.width / this.tilesPerRow);
+    if (canvas.width / canvas.height < 1) {
+      this.TILE_SIZE = Math.ceil(canvas.width / this.tilesPerRow);
     } else {
-      this.TILE_SIZE = Math.ceil(this.canvas.height / this.tilesPerRow);
+      this.TILE_SIZE = Math.ceil(canvas.height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(this.canvas.width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(this.canvas.height / this.TILE_SIZE);
+    this.colsOnScreen = Math.floor(canvas.width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.floor(canvas.height / this.TILE_SIZE);
   }
 
-  resetTileSize() {
-    if (this.canvas.width / this.canvas.height < 1) {
-      this.TILE_SIZE = Math.ceil(this.canvas.width / this.tilesPerRow);
+  resetTileSize(canvas) {
+    if (canvas.width / canvas.height < 1) {
+      this.TILE_SIZE = Math.ceil(canvas.width / this.tilesPerRow);
     } else {
-      this.TILE_SIZE = Math.ceil(this.canvas.height / this.tilesPerRow);
+      this.TILE_SIZE = Math.ceil(canvas.height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(this.canvas.width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(this.canvas.height / this.TILE_SIZE);
+    this.colsOnScreen = Math.floor(canvas.width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.floor(canvas.height / this.TILE_SIZE);
 
     this.tileContainer.forEach((tileRow) => {
       tileRow.forEach((tile) => {
@@ -112,7 +110,7 @@ class LevelManager {
     this.visibleBottomRow = bottomRow;
   }
 
-  draw(context, newOffsetX, newOffsetY) {
+  draw(drawFn, newOffsetX, newOffsetY) {
     if (
       this.cameraOffsetX !== newOffsetX ||
       this.cameraOffsetY !== newOffsetY
@@ -123,10 +121,10 @@ class LevelManager {
       this.updateVisibleTiles();
     }
 
-    this.drawTiles(context);
+    this.drawTiles(drawFn);
   }
 
-  drawTiles(context) {
+  drawTiles(drawFn) {
     this.tileContainer.forEach((tileRow, rowIndex) => {
       if (rowIndex > this.visibleTopRow && rowIndex < this.visibleBottomRow) {
         tileRow.forEach((tile, colIndex) => {
@@ -134,7 +132,7 @@ class LevelManager {
             colIndex > this.visibleLeftCol &&
             colIndex < this.visibleRightCol
           ) {
-            context.drawImage(
+            drawFn(
               this.textureSheet,
               tile.texture.x,
               tile.texture.y,

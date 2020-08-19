@@ -6,6 +6,7 @@ import { EntinyManager } from './EntinyManager';
 
 class Game {
   constructor(config, { onLoadGame, onDraw }) {
+    this.drawFn = this.drawFn.bind(this);
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.onDraw = onDraw;
@@ -44,12 +45,20 @@ class Game {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
 
-    this.level.resetTileSize();
+    this.level.resetTileSize(this.canvas);
     this.npcManager.resetPosition(this.level.TILE_SIZE);
     this.player.resetPosition(this.level.TILE_SIZE);
     this.camera.resetCameraOffset();
 
     window.requestAnimationFrame(this.mainDraw);
+  }
+
+  drawFn(...props) {
+    /**
+     * @todo add adbility to pass drawFn from outside.
+     * E.x. webgl context wrapper or something like that
+     */
+    this.context.drawImage(...props);
   }
 
   mainDraw() {
@@ -59,9 +68,9 @@ class Game {
     this.context.save();
     this.context.translate(this.camera.offsetX, this.camera.offsetY);
 
-    this.level.draw(this.context, this.camera.offsetX, this.camera.offsetY);
-    this.npcManager.draw(this.context, this.level.TILE_SIZE);
-    this.player.draw(this.context, this.level.TILE_SIZE);
+    this.level.draw(this.drawFn, this.camera.offsetX, this.camera.offsetY);
+    this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
+    this.player.draw(this.drawFn, this.level.TILE_SIZE);
     this.onDraw && this.onDraw();
     this.context.restore();
 

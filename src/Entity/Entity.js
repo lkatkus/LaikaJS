@@ -42,11 +42,11 @@ class Entity {
     this.speedY = Math.floor(tileSize / this.speedYOffset);
   }
 
-  draw(context, tileSize) {
+  draw(drawFn, tileSize) {
     this.isMoving && this.move(tileSize);
     this.isFalling && this.fall(tileSize);
 
-    context.drawImage(
+    drawFn(
       this.textureSheet,
       this.textureWidth * this.tileColOffset,
       this.textureHeight * this.tileRowOffset,

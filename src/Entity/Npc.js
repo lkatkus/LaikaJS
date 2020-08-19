@@ -1,9 +1,8 @@
 import Entity from './Entity';
 
 class Npc extends Entity {
-  constructor(canvasContext, level, config) {
+  constructor(level, config) {
     super(
-      canvasContext,
       level,
       level.getTile(config.min.row, config.min.col),
       config

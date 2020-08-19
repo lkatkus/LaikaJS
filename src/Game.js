@@ -6,20 +6,16 @@ import { EntinyManager } from './EntinyManager';
 
 class Game {
   constructor(config, { onLoadGame, onDraw }) {
+    this.drawFn = this.drawFn.bind(this);
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.onDraw = onDraw;
 
     this.setCanvas(config.canvas);
 
-    this.level = new LevelManager(this.canvas, this.context, config.level);
-    this.player = new Player(this.context, this.level, config.player);
-    this.npcManager = new EntinyManager(
-      this.context,
-      this.level,
-      config.npc,
-      Npc
-    );
+    this.level = new LevelManager(this.canvas, config.level);
+    this.player = new Player(this.level, config.player);
+    this.npcManager = new EntinyManager(this.level, config.npc, Npc);
     this.camera = new Camera(this.canvas, this.level, this.player);
     this.eventManager = new EventManager(config.events, {
       game: this,
@@ -49,12 +45,20 @@ class Game {
     this.canvas.width = window.innerWidth;
     this.canvas.height = window.innerHeight;
 
-    this.level.resetTileSize();
+    this.level.resetTileSize(this.canvas);
     this.npcManager.resetPosition(this.level.TILE_SIZE);
     this.player.resetPosition(this.level.TILE_SIZE);
     this.camera.resetCameraOffset();
 
     window.requestAnimationFrame(this.mainDraw);
+  }
+
+  drawFn(...props) {
+    /**
+     * @todo add adbility to pass drawFn from outside.
+     * E.x. webgl context wrapper or something like that
+     */
+    this.context.drawImage(...props);
   }
 
   mainDraw() {
@@ -64,9 +68,9 @@ class Game {
     this.context.save();
     this.context.translate(this.camera.offsetX, this.camera.offsetY);
 
-    this.level.draw(this.camera.offsetX, this.camera.offsetY);
-    this.npcManager.draw(this.level.TILE_SIZE);
-    this.player.draw(this.level.TILE_SIZE);
+    this.level.draw(this.drawFn, this.camera.offsetX, this.camera.offsetY);
+    this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
+    this.player.draw(this.drawFn, this.level.TILE_SIZE);
     this.onDraw && this.onDraw();
     this.context.restore();
 

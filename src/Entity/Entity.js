@@ -1,7 +1,6 @@
 class Entity {
-  constructor(contextRef, levelRef, initialLocation, config) {
+  constructor(levelRef, initialLocation, config) {
     this.name = config.name;
-    this.context = contextRef;
     this.level = levelRef;
     /** Position in the game world */
     this.row = initialLocation.row;
@@ -43,11 +42,11 @@ class Entity {
     this.speedY = Math.floor(tileSize / this.speedYOffset);
   }
 
-  draw(tileSize) {
+  draw(drawFn, tileSize) {
     this.isMoving && this.move(tileSize);
     this.isFalling && this.fall(tileSize);
 
-    this.context.drawImage(
+    drawFn(
       this.textureSheet,
       this.textureWidth * this.tileColOffset,
       this.textureHeight * this.tileRowOffset,

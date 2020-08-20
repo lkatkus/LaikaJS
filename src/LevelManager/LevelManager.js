@@ -3,8 +3,11 @@ import LevelTile from './LevelTile';
 
 class LevelManager {
   constructor(canvas, config) {
+    this.levelLayout = {
+      rows: config.layout.length,
+      cols: config.layout[0].length,
+    };
     this.spawnMarker = config.spawnMarker;
-    this.levelLayout = config.layout;
     this.spriteSize = config.tileSheet.spriteSize;
     this.tilesPerRow = config.tileSheet.tilesPerRow;
     this.tileTypes = config.tileSheet.types;
@@ -17,7 +20,7 @@ class LevelManager {
     });
 
     this.setTileSize(canvas);
-    this.setTileContainer();
+    this.setTileContainer(config.layout);
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = new Image();
@@ -55,8 +58,8 @@ class LevelManager {
     });
   }
 
-  setTileContainer() {
-    this.tileContainer = this.levelLayout.map((layoutRow, row) =>
+  setTileContainer(levelLayout) {
+    this.tileContainer = levelLayout.map((layoutRow, row) =>
       layoutRow.map((type, col) => {
         if (type === this.spawnMarker) {
           this.spawnX = col * this.TILE_SIZE;
@@ -83,14 +86,15 @@ class LevelManager {
 
   updateVisibleTiles() {
     let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 2;
+
     if (leftCol < 0) {
       leftCol = 0;
     }
 
     let rightCol = leftCol + this.colsOnScreen + 4;
-    // @todo define in constructor
-    if (rightCol > this.levelLayout[0].length) {
-      rightCol = this.levelLayout[0].length;
+
+    if (rightCol > this.levelLayout.cols) {
+      rightCol = this.levelLayout.cols;
     }
 
     let topRow = Math.floor(this.cameraOffsetY / this.TILE_SIZE) - 2;
@@ -99,9 +103,8 @@ class LevelManager {
     }
 
     let bottomRow = topRow + this.rowsOnScreen + 4;
-    // @todo define in constructor
-    if (bottomRow > this.levelLayout.length) {
-      bottomRow = this.levelLayout.length;
+    if (bottomRow > this.levelLayout.rows) {
+      bottomRow = this.levelLayout.rows;
     }
 
     this.visibleLeftCol = leftCol;
@@ -126,11 +129,11 @@ class LevelManager {
 
   drawTiles(drawFn) {
     this.tileContainer.forEach((tileRow, rowIndex) => {
-      if (rowIndex > this.visibleTopRow && rowIndex < this.visibleBottomRow) {
+      if (rowIndex >= this.visibleTopRow && rowIndex <= this.visibleBottomRow) {
         tileRow.forEach((tile, colIndex) => {
           if (
-            colIndex > this.visibleLeftCol &&
-            colIndex < this.visibleRightCol
+            colIndex >= this.visibleLeftCol &&
+            colIndex <= this.visibleRightCol
           ) {
             drawFn(
               this.textureSheet,

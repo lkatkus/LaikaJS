@@ -2,11 +2,15 @@ import Entity from './Entity';
 
 class Npc extends Entity {
   constructor(level, config) {
-    super(
-      level,
-      level.getTile(config.min.row, config.min.col),
-      config
-    );
+    const spawnTile = level.getTile(config.min.row, config.min.col);
+
+    if (!spawnTile) {
+      throw new Error(
+        `Invalid npc '${config.name}' spawn location. Check if it is a valid tile.`
+      );
+    }
+
+    super(level, spawnTile, config);
 
     this.config = config;
 
@@ -67,7 +71,7 @@ class Npc extends Entity {
       }, 2000);
     }
 
-    if (this.col <= this.config.min.col && this.direction === 'left') {
+    if (this.col < this.config.min.col && this.direction === 'left') {
       this.moveEnd(this.direction);
       this.tileRowOffset = 3;
 

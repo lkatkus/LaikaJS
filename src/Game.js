@@ -6,6 +6,8 @@ import { EntinyManager } from './EntinyManager';
 
 class Game {
   constructor(config, { onLoadGame, onDraw }) {
+    const loadingHandlers = [];
+
     this.drawFn = this.drawFn.bind(this);
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
@@ -14,19 +16,22 @@ class Game {
     this.setCanvas(config.canvas);
 
     this.level = new LevelManager(this.canvas, config.level);
+    loadingHandlers.push(this.level.loadingHandler);
     this.player = new Player(this.level, config.player);
-    this.npcManager = new EntinyManager(this.level, config.npc, Npc);
+    loadingHandlers.push(this.player.loadingHandler);
+
+    if (config.npc) {
+      this.npcManager = new EntinyManager(this.level, config.npc, Npc);
+      loadingHandlers.push(this.npcManager.loadingHandler);
+    }
+
     this.camera = new Camera(this.canvas, this.level, this.player);
     this.eventManager = new EventManager(config.events, {
       game: this,
       player: this.player,
     });
 
-    Promise.all([
-      this.level.loadingHandler,
-      this.player.loadingHandler,
-      this.npcManager.loadingHandler,
-    ]).then(() => this.startGame(onLoadGame));
+    Promise.all(loadingHandlers).then(() => this.startGame(onLoadGame));
   }
 
   setCanvas(canvas) {
@@ -46,7 +51,7 @@ class Game {
     this.canvas.height = window.innerHeight;
 
     this.level.resetTileSize(this.canvas);
-    this.npcManager.resetPosition(this.level.TILE_SIZE);
+    this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
     this.player.resetPosition(this.level.TILE_SIZE);
     this.camera.resetCameraOffset();
 
@@ -69,7 +74,7 @@ class Game {
     this.context.translate(this.camera.offsetX, this.camera.offsetY);
 
     this.level.draw(this.drawFn, this.camera.offsetX, this.camera.offsetY);
-    this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
+    this.npcManager && this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
     this.player.draw(this.drawFn, this.level.TILE_SIZE);
     this.onDraw && this.onDraw();
     this.context.restore();

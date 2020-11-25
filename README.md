@@ -10,7 +10,9 @@ npm install laikajs
 
 Import `Game` and provide configurations
 
-```
+```javascript
+import { Game } from 'laikajs'
+
 const PLAYER_CONFIG = {
   // Player entity name
   name: 'player',
@@ -86,10 +88,12 @@ const StartGame = () => {
     {
       onLoadGame: (game) => {
         // Function called after the game and all assets have been loaded
+        // To actually start the game script, you must call game.startGame
         game.startGame()
       },
       onDraw: (game) => {
         // Function called on each draw cycle
+        // Useful for debugging as it get the whole game object
       },
     }
   );

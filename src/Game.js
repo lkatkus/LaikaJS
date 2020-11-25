@@ -8,10 +8,11 @@ class Game {
   constructor(config, { onLoadGame, onDraw }) {
     const loadingHandlers = [];
 
+    this.onDraw = onDraw;
     this.drawFn = this.drawFn.bind(this);
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
-    this.onDraw = onDraw;
+    this.startGame = this.startGame.bind(this);
 
     this.setCanvas(config.canvas);
 
@@ -19,19 +20,22 @@ class Game {
     loadingHandlers.push(this.level.loadingHandler);
     this.player = new Player(this.level, config.player);
     loadingHandlers.push(this.player.loadingHandler);
+    this.camera = new Camera(this.level, this.player);
+    this.camera.setInitialCamera(this.canvas.width, this.canvas.height);
 
     if (config.npc) {
       this.npcManager = new EntinyManager(this.level, config.npc, Npc);
       loadingHandlers.push(this.npcManager.loadingHandler);
     }
 
-    this.camera = new Camera(this.canvas, this.level, this.player);
-    this.eventManager = new EventManager(config.events, {
-      game: this,
-      player: this.player,
-    });
+    if (config.events) {
+      this.eventManager = new EventManager(config.events, {
+        game: this,
+        player: this.player,
+      });
+    }
 
-    Promise.all(loadingHandlers).then(() => this.startGame(onLoadGame));
+    Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }
 
   setCanvas(canvas) {
@@ -53,7 +57,7 @@ class Game {
     this.level.resetTileSize(this.canvas);
     this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
     this.player.resetPosition(this.level.TILE_SIZE);
-    this.camera.resetCameraOffset();
+    this.camera.resetCameraOffset(this.canvas.width, this.canvas.height);
 
     window.requestAnimationFrame(this.mainDraw);
   }
@@ -67,7 +71,7 @@ class Game {
   }
 
   mainDraw() {
-    this.camera.updateCameraOffset();
+    this.camera.updateCameraOffset(this.canvas.width, this.canvas.height);
 
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.context.save();
@@ -80,11 +84,10 @@ class Game {
     this.context.restore();
 
     this.drawInterval = window.requestAnimationFrame(this.mainDraw);
-    this.eventManager.checkEvent(this.player);
+    this.eventManager && this.eventManager.checkEvent(this.player);
   }
 
-  startGame(onLoadCallback) {
-    onLoadCallback && onLoadCallback();
+  startGame() {
     window.requestAnimationFrame(this.mainDraw);
   }
 }

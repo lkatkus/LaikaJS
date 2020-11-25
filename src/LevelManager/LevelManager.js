@@ -170,7 +170,9 @@ class LevelManager {
   }
 
   canWalkTile(type) {
-    return this.tileTypes.solid.includes(type);
+    return (
+      this.tileTypes.solid.includes(type) || this.tileTypes.climbable.includes(type)
+    );
   }
 }
 

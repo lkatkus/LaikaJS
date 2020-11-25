@@ -117,6 +117,10 @@ class Player extends Entity {
     const anchorCol = Math.floor(this.anchorX / tileSize);
     const tileBelow = this.level.getTile(this.row + 1, anchorCol);
 
+    if (tileBelow === null) {
+      return;
+    }
+
     if (!this.level.canWalkTile(tileBelow.type)) {
       this.isFalling = true;
     }
@@ -131,6 +135,10 @@ class Player extends Entity {
       nextRow = Math.floor((this.y + tileSize + 10) / tileSize);
       nextCol = Math.floor(this.anchorX / tileSize);
       nextTile = this.level.getTile(nextRow, nextCol);
+
+      if (nextTile === null) {
+        return;
+      }
 
       if (!this.level.canWalkTile(nextTile.type)) {
         /** @todo add some sort acceleration, when falling */

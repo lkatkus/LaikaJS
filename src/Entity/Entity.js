@@ -11,7 +11,8 @@ class Entity {
     this.tileRowOffset = 2;
     this.tileColOffset = 0;
     this.drawOffset = config.texture.drawOffset;
-    this.drawHeightOffset = config.texture.drawHeightOffset;
+    this.drawWidthOffset = config.texture.drawWidthOffset || 1;
+    this.drawHeightOffset = config.texture.drawHeightOffset || 1;
     this.tileCols = config.texture.tileCols;
     this.textureWidth = config.texture.width;
     this.textureHeight = config.texture.height;
@@ -54,7 +55,7 @@ class Entity {
       this.textureHeight,
       this.x,
       this.y - tileSize * this.drawOffset,
-      tileSize,
+      tileSize * this.drawWidthOffset,
       tileSize * this.drawHeightOffset
     );
   }

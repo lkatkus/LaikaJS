@@ -24,16 +24,25 @@ class Entity {
     this.speedX = Math.floor(levelRef.TILE_SIZE / this.speedXOffset);
     this.speedY = Math.floor(levelRef.TILE_SIZE / this.speedYOffset);
     /** Used to handle player animations */
-    this.colOffsetInterval = setInterval(() => {
-      this.tileColOffset =
-        this.tileColOffset < this.tileCols ? (this.tileColOffset += 1) : 0;
-    }, 100);
+    this.startAnimation();
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = new Image();
       this.textureSheet.src = config.texture.source;
       this.textureSheet.onload = () => resolve();
     });
+  }
+
+  startAnimation() {
+    this.colOffsetInterval = setInterval(() => {
+      this.tileColOffset =
+        this.tileColOffset < this.tileCols ? (this.tileColOffset += 1) : 0;
+    }, 100);
+  }
+
+  stopAnimation() {
+    clearInterval(this.colOffsetInterval);
+    this.colOffsetInterval = null;
   }
 
   resetPosition(tileSize) {

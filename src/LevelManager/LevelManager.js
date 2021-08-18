@@ -21,6 +21,7 @@ class LevelManager {
 
     this.setTileSize(canvas);
     this.setTileContainer(config.layout);
+    this.setWorldSize();
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = new Image();
@@ -56,6 +57,8 @@ class LevelManager {
         tile.updateTileSize(this.TILE_SIZE);
       });
     });
+
+    this.setWorldSize()
   }
 
   setTileContainer(levelLayout) {
@@ -82,6 +85,11 @@ class LevelManager {
         );
       })
     );
+  }
+
+  setWorldSize() {
+    this.levelWidth = this.TILE_SIZE * this.levelLayout.cols;
+    this.levelHeight = this.TILE_SIZE * this.levelLayout.rows;
   }
 
   updateVisibleTiles() {
@@ -113,21 +121,7 @@ class LevelManager {
     this.visibleBottomRow = bottomRow;
   }
 
-  draw(drawFn, newOffsetX, newOffsetY) {
-    if (
-      this.cameraOffsetX !== newOffsetX ||
-      this.cameraOffsetY !== newOffsetY
-    ) {
-      this.cameraOffsetX = -newOffsetX;
-      this.cameraOffsetY = -newOffsetY;
-
-      this.updateVisibleTiles();
-    }
-
-    this.drawTiles(drawFn);
-  }
-
-  drawTiles(drawFn) {
+  drawForeground(drawFn) {
     this.tileContainer.forEach((tileRow, rowIndex) => {
       if (rowIndex >= this.visibleTopRow && rowIndex <= this.visibleBottomRow) {
         tileRow.forEach((tile, colIndex) => {
@@ -152,6 +146,20 @@ class LevelManager {
     });
   }
 
+  draw(drawFn, newOffsetX, newOffsetY) {
+    if (
+      this.cameraOffsetX !== newOffsetX ||
+      this.cameraOffsetY !== newOffsetY
+    ) {
+      this.cameraOffsetX = -newOffsetX;
+      this.cameraOffsetY = -newOffsetY;
+
+      this.updateVisibleTiles();
+    }
+
+    this.drawForeground(drawFn);
+  }
+
   getTile(row, col) {
     if (
       row < 0 ||
@@ -171,7 +179,8 @@ class LevelManager {
 
   canWalkTile(type) {
     return (
-      this.tileTypes.solid.includes(type) || this.tileTypes.climbable.includes(type)
+      this.tileTypes.solid.includes(type) ||
+      this.tileTypes.climbable.includes(type)
     );
   }
 }

@@ -24,7 +24,11 @@ class Camera {
     if (this.player.y + this.offsetY < (screenHeight / 10) * 4) {
       this.offsetY = this.offsetY + this.player.speedY;
     } else if (this.player.y + this.offsetY > (screenHeight / 10) * 6) {
-      this.offsetY = this.offsetY - this.player.speedY;
+      const offsetUpdate = this.player.isFalling
+        ? this.player.speedFall
+        : this.player.speedY;
+
+      this.offsetY = this.offsetY - offsetUpdate;
     }
   }
 }

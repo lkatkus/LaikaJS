@@ -142,12 +142,17 @@ class Player extends Entity {
       }
 
       if (!this.level.canWalkTile(nextTile.type)) {
-        /** @todo add some sort acceleration, when falling */
-        this.y = this.y + tileSize / 8;
+        this.y = this.y + this.speedFall;
       } else {
         this.isFalling = false;
         this.row = nextTile.row - 1;
         this.y = nextTile.y - nextTile.height;
+
+        if (this.direction === MOVEMENT_DIRECTION.right) {
+          this.tileRowOffset = 2;
+        } else {
+          this.tileRowOffset = 3;
+        }
       }
 
       this.updateAnchor(tileSize);
@@ -187,17 +192,21 @@ class Player extends Entity {
     switch (this.direction) {
       case MOVEMENT_DIRECTION.right:
         if ((nextTile.type !== -1 && !this.isOnLadder) || this.canFly) {
-          this.tileRowOffset = 0;
+          this.tileRowOffset = this.isFalling ? 6 : 0;
           this.col = nextTile.col;
-          this.x = this.x + this.speedX;
+          this.x = !this.isFalling
+            ? this.x + this.speedX
+            : this.x + this.speedX / 2;
         }
 
         break;
       case MOVEMENT_DIRECTION.left:
         if ((nextTile.type !== -1 && !this.isOnLadder) || this.canFly) {
-          this.tileRowOffset = 1;
+          this.tileRowOffset = this.isFalling ? 7 : 1;
           this.col = nextTile.col;
-          this.x = this.x - this.speedX;
+          this.x = !this.isFalling
+            ? this.x - this.speedX
+            : this.x - this.speedX / 2;
         }
 
         break;
@@ -260,12 +269,12 @@ class Player extends Entity {
     switch (direction) {
       case 'right':
         if (!this.isOnLadder) {
-          this.tileRowOffset = 2;
+          this.tileRowOffset = this.isFalling ? 6 : 2;
         }
         break;
       case 'left':
         if (!this.isOnLadder) {
-          this.tileRowOffset = 3;
+          this.tileRowOffset = this.isFalling ? 7 : 3;
         }
         break;
       case 'up':

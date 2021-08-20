@@ -21,8 +21,10 @@ class Entity {
     this.direction = 'right';
     this.speedXOffset = config.movement.speedX;
     this.speedYOffset = config.movement.speedY;
+    this.speedFallOffset = config.movement.speedFallY || 8;
     this.speedX = Math.floor(levelRef.TILE_SIZE / this.speedXOffset);
     this.speedY = Math.floor(levelRef.TILE_SIZE / this.speedYOffset);
+    this.speedFall = Math.floor(levelRef.TILE_SIZE / this.speedFallOffset);
     /** Used to handle player animations */
     this.startAnimation();
 

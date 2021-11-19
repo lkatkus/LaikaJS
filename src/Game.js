@@ -11,17 +11,19 @@ class Game {
     this.onDraw = onDraw;
     this.renderer = config.initRenderer();
     this.mainDraw = this.mainDraw.bind(this);
-    // this.handleResize = this.handleResize.bind(this);
+    this.handleResize = this.handleResize.bind(this);
     this.startGame = this.startGame.bind(this);
 
     this.level = new LevelManager(this.renderer, config.level);
     loadingHandlers.push(this.level.loadingHandler);
+
     this.player = new Player(
       this.level,
       config.player,
       this.renderer.initSpriteRenderer
     );
     loadingHandlers.push(this.player.loadingHandler);
+
     this.camera = new Camera(this.level, this.player);
     this.camera.setInitialCamera(
       this.renderer.screenWidth,
@@ -35,6 +37,7 @@ class Game {
         Npc,
         this.renderer.initSpriteRenderer
       );
+
       loadingHandlers.push(this.npcManager.loadingHandler);
     }
 
@@ -48,16 +51,15 @@ class Game {
     Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }
 
-  handleResize() {
-    // @TODO
-    // window.cancelAnimationFrame(this.drawInterval);
-    // this.canvas.width = window.innerWidth;
-    // this.canvas.height = window.innerHeight;
-    // this.level.resetTileSize(this.canvas);
-    // this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
-    // this.player.resetPosition(this.level.TILE_SIZE);
-    // this.camera.resetCameraOffset(this.canvas.width, this.canvas.height);
-    // window.requestAnimationFrame(this.mainDraw);
+  handleResize(screenWidth, screenHeight) {
+    window.cancelAnimationFrame(this.drawInterval);
+
+    this.level.resetTileSize(screenWidth, screenHeight);
+    this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
+    this.player.resetPosition(this.level.TILE_SIZE);
+    this.camera.resetCameraOffset(screenWidth, screenHeight);
+
+    window.requestAnimationFrame(this.mainDraw);
   }
 
   mainDraw(currentTime) {
@@ -84,6 +86,7 @@ class Game {
     this.renderer.onAfterRender();
 
     this.drawInterval = window.requestAnimationFrame(this.mainDraw);
+    this.eventManager && this.eventManager.checkEvent(this.player);
   }
 
   startGame() {

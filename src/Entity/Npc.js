@@ -1,7 +1,7 @@
 import Entity from './Entity';
 
 class Npc extends Entity {
-  constructor(level, config) {
+  constructor(level, config, initRenderer) {
     const spawnTile = level.getTile(config.min.row, config.min.col);
 
     if (!spawnTile) {
@@ -10,7 +10,7 @@ class Npc extends Entity {
       );
     }
 
-    super(level, spawnTile, config);
+    super(level, spawnTile, config, initRenderer);
 
     this.config = config;
 
@@ -40,7 +40,10 @@ class Npc extends Entity {
     }
   }
 
-  move(tileSize) {
+  move(tileSize, deltaTime) {
+    const offsetSpeedX = this.speedX * deltaTime;
+    const offsetSpeedY = this.speedY * deltaTime;
+
     this.row = Math.floor(this.y / tileSize);
     this.col = Math.floor(this.x / tileSize);
 
@@ -48,17 +51,17 @@ class Npc extends Entity {
     switch (this.direction) {
       case 'right':
         this.tileRowOffset = 0;
-        this.x = this.x + this.speedX;
+        this.x = this.x + offsetSpeedX;
         break;
       case 'left':
         this.tileRowOffset = 1;
-        this.x = this.x - this.speedX;
+        this.x = this.x - offsetSpeedX;
         break;
       case 'up':
-        this.y = this.y - this.speedY;
+        this.y = this.y - offsetSpeedY;
         break;
       case 'down':
-        this.y = this.y + this.speedY;
+        this.y = this.y + offsetSpeedY;
         break;
     }
 

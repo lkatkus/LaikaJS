@@ -2,7 +2,9 @@ import LevelTextureManager from './LevelTextureManager';
 import LevelTile from './LevelTile';
 
 class LevelManager {
-  constructor(canvas, config) {
+  constructor(renderer, config) {
+    renderer.initBackgroundRenderer(config.tileSheet.src);
+
     this.levelLayout = {
       rows: config.layout.length,
       cols: config.layout[0].length,
@@ -19,38 +21,37 @@ class LevelManager {
       nonTextureTiles: this.tileTypes.nonTexture,
     });
 
-    this.setTileSize(canvas);
+    this.setTileSize(renderer.screenWidth, renderer.screenHeight);
     this.setTileContainer(config.layout);
     this.setWorldSize();
 
     this.loadingHandler = new Promise((resolve) => {
-      this.textureSheet = new Image();
-      this.textureSheet.src = config.tileSheet.src;
-      this.textureSheet.onload = () => resolve();
+      this.textureSheet = config.tileSheet.src;
+      resolve();
     });
   }
 
-  setTileSize(canvas) {
+  setTileSize(width, height) {
     // TODO add check to check if new TILE_SIZE !== CURRENT_TILE_SIZE
-    if (canvas.width / canvas.height < 1) {
-      this.TILE_SIZE = Math.ceil(canvas.width / this.tilesPerRow);
+    if (width / height < 1) {
+      this.TILE_SIZE = Math.ceil(width / this.tilesPerRow);
     } else {
-      this.TILE_SIZE = Math.ceil(canvas.height / this.tilesPerRow);
+      this.TILE_SIZE = Math.ceil(height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(canvas.width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(canvas.height / this.TILE_SIZE);
+    this.colsOnScreen = Math.floor(width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.floor(height / this.TILE_SIZE);
   }
 
-  resetTileSize(canvas) {
-    if (canvas.width / canvas.height < 1) {
-      this.TILE_SIZE = Math.ceil(canvas.width / this.tilesPerRow);
+  resetTileSize(width, height) {
+    if (width / height < 1) {
+      this.TILE_SIZE = Math.ceil(width / this.tilesPerRow);
     } else {
-      this.TILE_SIZE = Math.ceil(canvas.height / this.tilesPerRow);
+      this.TILE_SIZE = Math.ceil(height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(canvas.width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(canvas.height / this.TILE_SIZE);
+    this.colsOnScreen = Math.floor(width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.floor(height / this.TILE_SIZE);
 
     this.tileContainer.forEach((tileRow) => {
       tileRow.forEach((tile) => {
@@ -58,7 +59,7 @@ class LevelManager {
       });
     });
 
-    this.setWorldSize()
+    this.setWorldSize();
   }
 
   setTileContainer(levelLayout) {
@@ -99,7 +100,7 @@ class LevelManager {
       leftCol = 0;
     }
 
-    let rightCol = leftCol + this.colsOnScreen + 4;
+    let rightCol = leftCol + this.colsOnScreen + 3;
 
     if (rightCol > this.levelLayout.cols) {
       rightCol = this.levelLayout.cols;
@@ -110,7 +111,7 @@ class LevelManager {
       topRow = 0;
     }
 
-    let bottomRow = topRow + this.rowsOnScreen + 4;
+    let bottomRow = topRow + this.rowsOnScreen + 3;
     if (bottomRow > this.levelLayout.rows) {
       bottomRow = this.levelLayout.rows;
     }
@@ -122,28 +123,34 @@ class LevelManager {
   }
 
   drawForeground(drawFn) {
+    const visibleTiles = [];
+
     this.tileContainer.forEach((tileRow, rowIndex) => {
       if (rowIndex >= this.visibleTopRow && rowIndex <= this.visibleBottomRow) {
         tileRow.forEach((tile, colIndex) => {
           if (
             colIndex >= this.visibleLeftCol &&
-            colIndex <= this.visibleRightCol
+            colIndex <= this.visibleRightCol &&
+            !this.tileTypes.nonTexture.includes(tile.type)
           ) {
-            drawFn(
-              this.textureSheet,
-              tile.texture.x,
-              tile.texture.y,
-              this.spriteSize,
-              this.spriteSize,
-              tile.x,
-              tile.y,
-              tile.width,
-              tile.height
-            );
+            visibleTiles.push({
+              sx: tile.texture.x,
+              sy: tile.texture.y,
+              sWidth: this.spriteSize,
+              sHeight: this.spriteSize,
+              dx: tile.x,
+              dy: tile.y,
+              dWidth: tile.width,
+              dHeight: tile.height,
+            });
           }
         });
       }
     });
+
+    if (visibleTiles.length > 0) {
+      drawFn(visibleTiles);
+    }
   }
 
   draw(drawFn, newOffsetX, newOffsetY) {

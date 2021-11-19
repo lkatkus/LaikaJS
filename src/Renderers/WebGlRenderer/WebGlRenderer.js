@@ -19,10 +19,10 @@ class WebGlRenderer {
     this.gl.clearColor(0.4, 0.6, 1.0, 0.0);
 
     this.renderLevel = this.renderLevel.bind(this);
-    this.renderPlayer = this.renderPlayer.bind(this);
+    this.renderSprite = this.renderSprite.bind(this);
 
     this.initBackgroundRenderer = this.initBackgroundRenderer.bind(this);
-    this.initPlayerRenderer = this.initPlayerRenderer.bind(this);
+    this.initSpriteRenderer = this.initSpriteRenderer.bind(this);
 
     this.offsetX = 0;
     this.offsetY = 0;
@@ -32,12 +32,12 @@ class WebGlRenderer {
     this.bgRenderer = new TilesRenderer(this.gl, texture);
   }
 
-  initPlayerRenderer(texture, tileSize) {
-    this.playerRenderer = new SpriteRenderer(this.gl, texture.source, {
+  initSpriteRenderer(texture, tileSize) {
+    return new SpriteRenderer(this.gl, texture.source, {
       width: texture.width,
       height: texture.height,
-      renderWidth: tileSize * texture.drawWidthOffset,
-      renderHeight: tileSize * texture.drawHeightOffset,
+      renderWidth: tileSize * (texture.drawWidthOffset || 1),
+      renderHeight: tileSize * (texture.drawHeightOffset || 1),
     });
   }
 
@@ -62,13 +62,13 @@ class WebGlRenderer {
     this.bgRenderer.render(tilesToRender, this.worldSpaceMatrix);
   }
 
-  renderPlayer(image, sx, sy, sWidth, sHeight, dx, dy) {
+  renderSprite(renderer, image, sx, sy, sWidth, sHeight, dx, dy) {
     const frames = {
       x: sx > 0 ? (sx * image.width) / sWidth / image.width : 0,
       y: sy > 0 ? (sy * image.height) / sHeight / image.height : 0,
     };
 
-    this.playerRenderer.render({ x: dx, y: dy }, frames, this.worldSpaceMatrix);
+    renderer.render({ x: dx, y: dy }, frames, this.worldSpaceMatrix);
   }
 
   translate(x = 0, y = 0) {

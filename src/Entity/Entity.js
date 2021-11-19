@@ -10,7 +10,7 @@ class Entity {
     /** Animation params */
     this.tileRowOffset = 2;
     this.tileColOffset = 0;
-    this.drawOffset = config.texture.drawOffset;
+    this.drawOffset = config.texture.drawOffset || 0;
     this.drawWidthOffset = config.texture.drawWidthOffset || 1;
     this.drawHeightOffset = config.texture.drawHeightOffset || 1;
     this.tileCols = config.texture.tileCols;
@@ -33,7 +33,7 @@ class Entity {
       resolve();
     });
 
-    initRenderer(config.texture, this.level.TILE_SIZE);
+    this.renderer = initRenderer(config.texture, this.level.TILE_SIZE);
 
     this.draw = this.draw.bind(this);
   }
@@ -64,6 +64,7 @@ class Entity {
     this.isFalling && this.fall(tileSize);
 
     drawFn(
+      this.renderer,
       this.textureSheet,
       this.textureWidth * this.tileColOffset,
       this.textureHeight * this.tileRowOffset,

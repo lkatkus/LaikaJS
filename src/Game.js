@@ -19,7 +19,7 @@ class Game {
     this.player = new Player(
       this.level,
       config.player,
-      this.renderer.initPlayerRenderer
+      this.renderer.initSpriteRenderer
     );
     loadingHandlers.push(this.player.loadingHandler);
     this.camera = new Camera(this.level, this.player);
@@ -29,7 +29,12 @@ class Game {
     );
 
     if (config.npc) {
-      this.npcManager = new EntinyManager(this.level, config.npc, Npc);
+      this.npcManager = new EntinyManager(
+        this.level,
+        config.npc,
+        Npc,
+        this.renderer.initSpriteRenderer
+      );
       loadingHandlers.push(this.npcManager.loadingHandler);
     }
 
@@ -43,33 +48,19 @@ class Game {
     Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }
 
-  // handleResize() {
-  //   window.cancelAnimationFrame(this.drawInterval);
-
-  //   this.canvas.width = window.innerWidth;
-  //   this.canvas.height = window.innerHeight;
-
-  //   this.level.resetTileSize(this.canvas);
-  //   this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
-  //   this.player.resetPosition(this.level.TILE_SIZE);
-  //   this.camera.resetCameraOffset(this.canvas.width, this.canvas.height);
-
-  //   window.requestAnimationFrame(this.mainDraw);
-  // }
+  handleResize() {
+    // @TODO
+    // window.cancelAnimationFrame(this.drawInterval);
+    // this.canvas.width = window.innerWidth;
+    // this.canvas.height = window.innerHeight;
+    // this.level.resetTileSize(this.canvas);
+    // this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
+    // this.player.resetPosition(this.level.TILE_SIZE);
+    // this.camera.resetCameraOffset(this.canvas.width, this.canvas.height);
+    // window.requestAnimationFrame(this.mainDraw);
+  }
 
   mainDraw(currentTime) {
-    // this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    // this.context.save();
-    // this.context.translate(this.camera.offsetX, this.camera.offsetY);
-
-    // this.level.draw(this.drawFn, this.camera.offsetX, this.camera.offsetY);
-    // this.npcManager && this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
-    // this.onDraw && this.onDraw();
-    // this.context.restore();
-
-    // this.drawInterval = window.requestAnimationFrame(this.mainDraw);
-    // this.eventManager && this.eventManager.checkEvent(this.player);
-
     const deltaTime = (currentTime - this.previousTime) / 1000.0;
     this.previousTime = currentTime;
 
@@ -86,7 +77,9 @@ class Game {
       this.camera.offsetX,
       this.camera.offsetY
     );
-    this.player.draw(this.renderer.renderPlayer, deltaTime);
+    this.npcManager &&
+      this.npcManager.draw(this.renderer.renderSprite, deltaTime);
+    this.player.draw(this.renderer.renderSprite, deltaTime);
 
     this.renderer.onAfterRender();
 

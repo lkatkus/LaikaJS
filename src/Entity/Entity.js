@@ -1,5 +1,5 @@
 class Entity {
-  constructor(levelRef, initialLocation, config) {
+  constructor(levelRef, initialLocation, config, initRenderer) {
     this.name = config.name;
     this.level = levelRef;
     /** Position in the game world */
@@ -29,10 +29,13 @@ class Entity {
     this.startAnimation();
 
     this.loadingHandler = new Promise((resolve) => {
-      this.textureSheet = new Image();
-      this.textureSheet.src = config.texture.source;
-      this.textureSheet.onload = () => resolve();
+      this.textureSheet = config.texture.source;
+      resolve();
     });
+
+    initRenderer(config.texture, this.level.TILE_SIZE);
+
+    this.draw = this.draw.bind(this);
   }
 
   startAnimation() {
@@ -54,8 +57,10 @@ class Entity {
     this.speedY = Math.floor(tileSize / this.speedYOffset);
   }
 
-  draw(drawFn, tileSize) {
-    this.isMoving && this.move(tileSize);
+  draw(drawFn, deltaTime) {
+    const tileSize = this.level.TILE_SIZE;
+
+    this.isMoving && this.move(tileSize, deltaTime);
     this.isFalling && this.fall(tileSize);
 
     drawFn(

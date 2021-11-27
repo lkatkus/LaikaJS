@@ -14,6 +14,7 @@ class LevelManager {
 
     renderer.initBackgroundRenderer(config.tileSheet.src, {
       size: this.spriteSize,
+      tilesPerRow: config.tileSheet.cols,
     });
 
     this.levelTextureManager = new LevelTextureManager({
@@ -40,8 +41,8 @@ class LevelManager {
       this.TILE_SIZE = Math.ceil(height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(height / this.TILE_SIZE);
+    this.colsOnScreen = Math.ceil(width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.ceil(height / this.TILE_SIZE);
   }
 
   resetTileSize(width, height) {
@@ -51,8 +52,8 @@ class LevelManager {
       this.TILE_SIZE = Math.ceil(height / this.tilesPerRow);
     }
 
-    this.colsOnScreen = Math.floor(width / this.TILE_SIZE);
-    this.rowsOnScreen = Math.floor(height / this.TILE_SIZE);
+    this.colsOnScreen = Math.ceil(width / this.TILE_SIZE);
+    this.rowsOnScreen = Math.ceil(height / this.TILE_SIZE);
 
     this.tileContainer.forEach((tileRow) => {
       tileRow.forEach((tile) => {
@@ -87,30 +88,25 @@ class LevelManager {
     );
   }
 
-  // setWorldSize() {
-  //   this.levelWidth = this.TILE_SIZE * this.levelLayout.cols;
-  //   this.levelHeight = this.TILE_SIZE * this.levelLayout.rows;
-  // }
-
   updateVisibleTiles() {
-    let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 2;
+    let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 1;
 
     if (leftCol < 0) {
       leftCol = 0;
     }
 
-    let rightCol = leftCol + this.colsOnScreen + 3;
+    let rightCol = leftCol + this.colsOnScreen + 1;
 
     if (rightCol > this.levelLayout.cols) {
       rightCol = this.levelLayout.cols;
     }
 
-    let topRow = Math.floor(this.cameraOffsetY / this.TILE_SIZE) - 2;
+    let topRow = Math.floor(this.cameraOffsetY / this.TILE_SIZE) - 1;
     if (topRow < 0) {
       topRow = 0;
     }
 
-    let bottomRow = topRow + this.rowsOnScreen + 3;
+    let bottomRow = topRow + this.rowsOnScreen + 1;
     if (bottomRow > this.levelLayout.rows) {
       bottomRow = this.levelLayout.rows;
     }
@@ -124,28 +120,32 @@ class LevelManager {
   drawForeground(drawFn) {
     const visibleTiles = [];
 
-    this.tileContainer.forEach((tileRow, rowIndex) => {
-      if (rowIndex >= this.visibleTopRow && rowIndex <= this.visibleBottomRow) {
-        tileRow.forEach((tile, colIndex) => {
-          if (
-            colIndex >= this.visibleLeftCol &&
-            colIndex <= this.visibleRightCol &&
-            !this.tileTypes.nonTexture.includes(tile.type)
-          ) {
-            visibleTiles.push({
-              sx: tile.texture.x,
-              sy: tile.texture.y,
-              sWidth: this.spriteSize,
-              sHeight: this.spriteSize,
-              dx: tile.x,
-              dy: tile.y,
-              dWidth: tile.width,
-              dHeight: tile.height,
-            });
-          }
-        });
+    for (
+      let rowIndex = this.visibleTopRow;
+      rowIndex <= this.visibleBottomRow;
+      rowIndex++
+    ) {
+      for (
+        let colIndex = this.visibleLeftCol;
+        colIndex <= this.visibleRightCol;
+        colIndex++
+      ) {
+        const tile = this.getTile(rowIndex, colIndex);
+
+        if (tile && !this.tileTypes.nonTexture.includes(tile.type)) {
+          visibleTiles.push({
+            sx: tile.texture.x,
+            sy: tile.texture.y,
+            sWidth: this.spriteSize,
+            sHeight: this.spriteSize,
+            dx: tile.x,
+            dy: tile.y,
+            dWidth: tile.width,
+            dHeight: tile.height,
+          });
+        }
       }
-    });
+    }
 
     if (visibleTiles.length > 0) {
       drawFn(visibleTiles);

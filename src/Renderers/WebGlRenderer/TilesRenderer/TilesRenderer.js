@@ -26,7 +26,7 @@ const TILES_FRAGMENT_SHADER = `
 `;
 
 class TilesRenderer {
-  constructor(gl, img_url, { size }) {
+  constructor(gl, img_url, { size, tilesPerRow }) {
     this.gl = gl;
     this.isLoaded = false;
     this.material = new Material(
@@ -36,25 +36,16 @@ class TilesRenderer {
     );
     this.size = new Point(size, size);
     this.image = img_url;
+    this.tilesPerRow = tilesPerRow;
+
+    this.uv_x = this.size.x / this.image.width;
+    this.uv_y = this.size.y / this.image.height;
 
     this.setup();
   }
 
   static createRectArray(x = 0, y = 0, w = 1, h = 1) {
-    return new Float32Array([
-      x,
-      y,
-      x + w,
-      y,
-      x,
-      y + h,
-      x,
-      y + h,
-      x + w,
-      y,
-      x + w,
-      y + h,
-    ]);
+    return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
   }
 
   setup() {
@@ -81,10 +72,7 @@ class TilesRenderer {
   }
 
   render(tilesToRender, worldSpaceMatrix) {
-    const gl = this.gl;
-
-    const uv_x = this.size.x / this.image.width;
-    const uv_y = this.size.y / this.image.height;
+    const { gl, tilesPerRow } = this;
 
     this.geo_buff = gl.createBuffer();
     this.frame_buff = gl.createBuffer();
@@ -94,30 +82,31 @@ class TilesRenderer {
 
     for (let tile of tilesToRender) {
       const frame = {
-        x: tile.sx > 0 ? (tile.sx * 20) / this.image.width : 0,
-        y: tile.sy > 0 ? (tile.sy * 20) / this.image.height : 0,
+        x: tile.sx > 0 ? (tile.sx * tilesPerRow) / this.image.width : 0,
+        y: tile.sy > 0 ? (tile.sy * tilesPerRow) / this.image.height : 0,
       };
 
-      geoBufferData = new Float32Array([
-        ...geoBufferData,
+      geoBufferData.push(
         ...TilesRenderer.createRectArray(
           tile.dx,
           tile.dy,
           tile.dWidth,
           tile.dHeight
-        ),
-      ]);
+        )
+      );
 
-      frameBufferData = new Float32Array([
-        ...frameBufferData,
+      frameBufferData.push(
         ...TilesRenderer.createRectArray(
-          frame.x * uv_x,
-          frame.y * uv_y,
-          uv_x,
-          uv_x
-        ),
-      ]);
+          frame.x * this.uv_x,
+          frame.y * this.uv_y,
+          this.uv_x,
+          this.uv_x
+        )
+      );
     }
+
+    geoBufferData = new Float32Array(geoBufferData);
+    frameBufferData = new Float32Array(frameBufferData);
 
     gl.useProgram(this.material.program);
 

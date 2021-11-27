@@ -3,8 +3,6 @@ import LevelTile from './LevelTile';
 
 class LevelManager {
   constructor(renderer, config) {
-    renderer.initBackgroundRenderer(config.tileSheet.src);
-
     this.levelLayout = {
       rows: config.layout.length,
       cols: config.layout[0].length,
@@ -13,6 +11,10 @@ class LevelManager {
     this.spriteSize = config.tileSheet.spriteSize;
     this.tilesPerRow = config.tileSheet.tilesPerRow;
     this.tileTypes = config.tileSheet.types;
+
+    renderer.initBackgroundRenderer(config.tileSheet.src, {
+      size: this.spriteSize,
+    });
 
     this.levelTextureManager = new LevelTextureManager({
       spawnMarker: this.spawnMarker,
@@ -23,7 +25,6 @@ class LevelManager {
 
     this.setTileSize(renderer.screenWidth, renderer.screenHeight);
     this.setTileContainer(config.layout);
-    this.setWorldSize();
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = config.tileSheet.src;
@@ -58,8 +59,6 @@ class LevelManager {
         tile.updateTileSize(this.TILE_SIZE);
       });
     });
-
-    this.setWorldSize();
   }
 
   setTileContainer(levelLayout) {
@@ -88,10 +87,10 @@ class LevelManager {
     );
   }
 
-  setWorldSize() {
-    this.levelWidth = this.TILE_SIZE * this.levelLayout.cols;
-    this.levelHeight = this.TILE_SIZE * this.levelLayout.rows;
-  }
+  // setWorldSize() {
+  //   this.levelWidth = this.TILE_SIZE * this.levelLayout.cols;
+  //   this.levelHeight = this.TILE_SIZE * this.levelLayout.rows;
+  // }
 
   updateVisibleTiles() {
     let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 2;

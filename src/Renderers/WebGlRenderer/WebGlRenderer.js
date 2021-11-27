@@ -28,8 +28,8 @@ class WebGlRenderer {
     this.offsetY = 0;
   }
 
-  initBackgroundRenderer(texture) {
-    this.bgRenderer = new TilesRenderer(this.gl, texture);
+  initBackgroundRenderer(texture, config) {
+    this.bgRenderer = new TilesRenderer(this.gl, texture, config);
   }
 
   initSpriteRenderer(texture, tileSize) {

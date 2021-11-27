@@ -26,7 +26,7 @@ const TILES_FRAGMENT_SHADER = `
 `;
 
 class TilesRenderer {
-  constructor(gl, img_url) {
+  constructor(gl, img_url, { size }) {
     this.gl = gl;
     this.isLoaded = false;
     this.material = new Material(
@@ -34,7 +34,7 @@ class TilesRenderer {
       TILES_VERTEX_SHADER,
       TILES_FRAGMENT_SHADER
     );
-    this.size = new Point(60, 60);
+    this.size = new Point(size, size);
     this.image = img_url;
 
     this.setup();
@@ -156,4 +156,4 @@ class TilesRenderer {
   }
 }
 
-export default TilesRenderer
+export default TilesRenderer;

@@ -5,7 +5,7 @@ class Camera {
   }
 
   setInitialCamera(screenWidth, screenHeight) {
-    this.offsetX = -this.level.spawnX + screenWidth / 2;
+    this.offsetX = -this.level.spawnX + screenWidth / 2 - this.level.TILE_SIZE;
     this.offsetY = -(this.level.spawnY - screenHeight / 2);
   }
 
@@ -18,9 +18,9 @@ class Camera {
     const offsetSpeedX = this.player.speedX * deltaTime;
     const offsetSpeedY = this.player.speedY * deltaTime;
 
-    if (this.player.x + this.offsetX > (screenWidth / 10) * 6) {
+    if (this.player.anchorX + this.offsetX > (screenWidth / 10) * 8) {
       this.offsetX = this.offsetX - offsetSpeedX;
-    } else if (this.player.x + this.offsetX < (screenWidth / 10) * 4) {
+    } else if (this.player.anchorX + this.offsetX < (screenWidth / 10) * 2) {
       this.offsetX = this.offsetX + offsetSpeedX;
     }
 

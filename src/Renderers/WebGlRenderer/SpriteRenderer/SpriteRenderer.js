@@ -26,7 +26,7 @@ const FRAGMENT_SHADER = `
   }
 `;
 
-const createRectArray =(x = 0, y = 0, w = 1, h = 1) => {
+const createRectArray = (x = 0, y = 0, w = 1, h = 1) => {
   return new Float32Array([
     x,
     y,
@@ -41,7 +41,7 @@ const createRectArray =(x = 0, y = 0, w = 1, h = 1) => {
     x + w,
     y + h,
   ]);
-}
+};
 
 class SpriteRenderer {
   constructor(gl, img_url, options = {}) {
@@ -130,6 +130,15 @@ class SpriteRenderer {
     gl.useProgram(null);
   }
 
+  updateTexture(newImage, options) {
+    this.image = newImage;
+    this.size = new Point(options.width, options.height);
+    this.size.renderWidth = this.size.x * (options.drawWidthOffset || 1);
+    this.size.renderHeight = this.size.y * (options.drawHeightOffset || 1);
+
+    this.setup();
+  }
+
   render(position = { x: 0, y: 0 }, frames = { x: 0, y: 0 }, worldSpaceMatrix) {
     let gl = this.gl;
 
@@ -165,4 +174,4 @@ class SpriteRenderer {
   }
 }
 
-export default SpriteRenderer
+export default SpriteRenderer;

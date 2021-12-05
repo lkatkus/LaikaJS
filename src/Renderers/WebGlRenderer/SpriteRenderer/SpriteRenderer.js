@@ -130,11 +130,11 @@ class SpriteRenderer {
     gl.useProgram(null);
   }
 
-  updateTexture(newImage, options) {
-    this.image = newImage;
-    this.size = new Point(options.width, options.height);
-    this.size.renderWidth = this.size.x * (options.drawWidthOffset || 1);
-    this.size.renderHeight = this.size.y * (options.drawHeightOffset || 1);
+  updateTexture(newImage, tileSize) {
+    this.image = newImage.source;
+    this.size = new Point(newImage.width, newImage.height);
+    this.size.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
+    this.size.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
 
     this.setup();
   }

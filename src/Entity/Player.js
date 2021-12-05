@@ -98,7 +98,7 @@ class Player extends Entity {
   }
 
   levelUp(newTexture, config) {
-    this.renderer.updateTexture(newTexture.url, newTexture.config);
+    this.renderer.updateTexture(newTexture, this.level.TILE_SIZE);
 
     for (let prop in config) {
       this[prop] = config[prop];

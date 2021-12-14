@@ -3,7 +3,7 @@ import { SpriteRenderer } from './SpriteRenderer';
 import { M3x3 } from './utils';
 
 class WebGlRenderer {
-  constructor(gl) {
+  constructor(gl, options) {
     const { drawingBufferWidth, drawingBufferHeight } = gl;
 
     this.gl = gl;
@@ -16,7 +16,7 @@ class WebGlRenderer {
       .transition(-1, 1)
       .scale(2 / this.screenWidth, -2 / this.screenHeight);
 
-    this.gl.clearColor(0.4, 0.6, 1.0, 0.0);
+    this.gl.clearColor(...(options.clearColor || [0.4, 0.6, 1.0, 0.0]));
 
     this.renderLevel = this.renderLevel.bind(this);
     this.renderSprite = this.renderSprite.bind(this);

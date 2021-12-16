@@ -47,6 +47,24 @@ class Npc extends Entity {
     this.row = Math.floor(this.y / tileSize);
     this.col = Math.floor(this.x / tileSize);
 
+    if (this.col >= this.config.max.col && this.direction === 'right') {
+      this.moveEnd(this.direction);
+      this.tileRowOffset = 2;
+
+      return setTimeout(() => {
+        this.moveStart('left');
+      }, 2000);
+    }
+
+    if (this.col <= this.config.min.col && this.direction === 'left') {
+      this.moveEnd(this.direction);
+      this.tileRowOffset = 3;
+
+      return setTimeout(() => {
+        this.moveStart('right');
+      }, 5000);
+    }
+
     // TODO use consts for direction
     switch (this.direction) {
       case 'right':
@@ -63,24 +81,6 @@ class Npc extends Entity {
       case 'down':
         this.y = this.y + offsetSpeedY;
         break;
-    }
-
-    if (this.col >= this.config.max.col && this.direction === 'right') {
-      this.moveEnd(this.direction);
-      this.tileRowOffset = 2;
-
-      return setTimeout(() => {
-        this.moveStart('left');
-      }, 2000);
-    }
-
-    if (this.col < this.config.min.col && this.direction === 'left') {
-      this.moveEnd(this.direction);
-      this.tileRowOffset = 3;
-
-      return setTimeout(() => {
-        this.moveStart('right');
-      }, 5000);
     }
   }
 }

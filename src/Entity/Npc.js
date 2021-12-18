@@ -46,8 +46,9 @@ class Npc extends Entity {
 
     this.row = Math.floor(this.y / tileSize);
     this.col = Math.floor(this.x / tileSize);
-
+    
     if (this.col >= this.config.max.col && this.direction === 'right') {
+      this.x = Math.floor(this.config.max.col * tileSize)
       this.moveEnd(this.direction);
       this.tileRowOffset = 2;
 
@@ -56,7 +57,8 @@ class Npc extends Entity {
       }, 2000);
     }
 
-    if (this.col <= this.config.min.col && this.direction === 'left') {
+    if (this.col < this.config.min.col && this.direction === 'left') {
+      this.x = Math.floor(this.config.min.col * tileSize)
       this.moveEnd(this.direction);
       this.tileRowOffset = 3;
 

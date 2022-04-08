@@ -3,14 +3,14 @@ import LevelTile from './LevelTile';
 
 class LevelManager {
   constructor(renderer, config) {
-    this.levelLayout = {
-      rows: config.layout.length,
-      cols: config.layout[0].length,
-    };
     this.spawnMarker = config.spawnMarker;
     this.spriteSize = config.tileSheet.spriteSize;
     this.tilesPerRow = config.tileSheet.tilesPerRow;
     this.tileTypes = config.tileSheet.types;
+    this.levelLayout = {
+      rows: config.layout.length,
+      cols: config.layout[0].length,
+    };
 
     renderer.initBackgroundRenderer(config.tileSheet.src, {
       size: this.spriteSize,
@@ -43,6 +43,12 @@ class LevelManager {
 
     this.colsOnScreen = Math.ceil(width / this.TILE_SIZE);
     this.rowsOnScreen = Math.ceil(height / this.TILE_SIZE);
+
+    this.levelLayout = {
+      ...this.levelLayout,
+      x: this.levelLayout.cols * this.TILE_SIZE,
+      y: this.levelLayout.rows * this.TILE_SIZE,
+    };
   }
 
   resetTileSize(width, height) {

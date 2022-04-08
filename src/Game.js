@@ -74,6 +74,7 @@ class Game {
       deltaTime
     );
     this.renderer.translate(this.camera.offsetX, this.camera.offsetY);
+
     this.level.draw(
       this.renderer.renderLevel,
       this.camera.offsetX,
@@ -87,6 +88,8 @@ class Game {
 
     this.drawInterval = window.requestAnimationFrame(this.mainDraw);
     this.eventManager && this.eventManager.checkEvent(this.player);
+
+    this.onDraw && this.onDraw(this);
   }
 
   startGame() {

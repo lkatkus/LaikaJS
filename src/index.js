@@ -1,2 +1,2 @@
 export { default as Game } from './Game';
-export { WebGlRenderer } from './Renderers';
+export { WebGlRenderer, CanvasRenderer } from './Renderers';

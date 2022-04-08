@@ -1,9 +1,9 @@
+import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
-import { M3x3 } from './utils';
 
 class WebGlRenderer {
-  constructor(gl, options) {
+  constructor(gl, options = {}) {
     const { drawingBufferWidth, drawingBufferHeight } = gl;
 
     this.gl = gl;
@@ -16,7 +16,7 @@ class WebGlRenderer {
       .transition(-1, 1)
       .scale(2 / this.screenWidth, -2 / this.screenHeight);
 
-    this.gl.clearColor(...(options.clearColor || [0.4, 0.6, 1.0, 0.0]));
+    this.gl.clearColor(...(options.clearColor || [0, 0, 0, 0]));
 
     this.renderLevel = this.renderLevel.bind(this);
     this.renderSprite = this.renderSprite.bind(this);
@@ -55,7 +55,7 @@ class WebGlRenderer {
     const { gl } = this;
 
     gl.flush();
-    gl.endFrameEXP();
+    gl.endFrameEXP && gl.endFrameEXP();
   }
 
   renderLevel(tilesToRender) {

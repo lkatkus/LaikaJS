@@ -18,12 +18,12 @@ class EventManager {
       this.currentEvent.eventHandler(player);
     } else if (this.currentEvent && nextEvent) {
       if (nextEvent.id !== this.currentEvent.id) {
-        this.currentEvent.onLeave();
+        this.currentEvent.onLeave && this.currentEvent.onLeave();
         this.currentEvent = nextEvent;
         this.currentEvent.eventHandler();
       }
     } else if (this.currentEvent && !nextEvent) {
-      this.currentEvent.onLeave();
+      this.currentEvent.onLeave && this.currentEvent.onLeave();
       this.currentEvent = null;
     }
   }

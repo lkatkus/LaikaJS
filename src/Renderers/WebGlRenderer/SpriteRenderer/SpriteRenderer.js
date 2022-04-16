@@ -131,7 +131,7 @@ class SpriteRenderer {
   }
 
   updateTexture(newImage, tileSize) {
-    this.image = newImage.source;
+    this.image = newImage.src;
     this.size = new Point(newImage.width, newImage.height);
     this.size.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
     this.size.renderHeight = tileSize * (newImage.drawHeightOffset || 1);

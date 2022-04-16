@@ -5,11 +5,16 @@ import { Npc, Player } from './Entity';
 import { EntinyManager } from './EntinyManager';
 
 class Game {
-  constructor(config, { onLoadGame, onDraw }) {
+  constructor(config, { onAfterInit, onLoadGame, onDraw }) {
     const loadingHandlers = [];
 
     this.onDraw = onDraw;
     this.renderer = config.initRenderer();
+
+    if (config.initAudioPlayer) {
+      this.audioPlayer = config.initAudioPlayer(config.options.audio);
+    }
+
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.startGame = this.startGame.bind(this);
@@ -47,6 +52,8 @@ class Game {
         player: this.player,
       });
     }
+
+    onAfterInit && onAfterInit(this);
 
     Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }

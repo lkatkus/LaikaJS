@@ -47,17 +47,19 @@ export class WebAudioPlayer {
     };
   };
 
-  fadeIn = async (audio) => {
+  fadeIn = async (audio, onended) => {
     let fadeInInterval;
+    const maxVolume = audio.volume;
 
     audio.volume = 0;
+    audio.onended = onended;
     audio.play();
 
     await new Promise((res) => {
       let volume = 0;
 
       fadeInInterval = setInterval(() => {
-        if (volume >= 1) {
+        if (volume >= maxVolume) {
           clearInterval(fadeInInterval);
           res();
         } else {
@@ -65,17 +67,18 @@ export class WebAudioPlayer {
 
           volume += 0.1;
         }
-      }, 50);
+      }, 20);
     });
 
-    audio.volume = 1;
+    audio.volume = maxVolume;
   };
 
   fadeOut = async (audio) => {
     let fadeOutInterval;
+    const maxVolume = audio.volume;
 
     await new Promise((res) => {
-      let volume = 1;
+      let volume = maxVolume;
 
       fadeOutInterval = setInterval(() => {
         if (volume <= 0) {
@@ -86,14 +89,14 @@ export class WebAudioPlayer {
 
           volume -= 0.1;
         }
-      }, 50);
+      }, 20);
     });
 
     audio.pause();
-    audio.volume = 1;
+    audio.volume = maxVolume;
   };
 
-  play = async (name) => {
+  play = async (name, onended, skipFade) => {
     if (name === this.current) {
       return;
     }
@@ -104,9 +107,15 @@ export class WebAudioPlayer {
 
     if (this.available[name].data && this.available[name].isLoaded) {
       this.current = name;
+      const audioData = this.available[name].data;
 
       if (this?.options?.music?.on) {
-        this.fadeIn(this.available[name].data);
+        if (skipFade) {
+          audioData.onended = onended;
+          audioData.play();
+        } else {
+          this.fadeIn(audioData, onended);
+        }
       }
     } else {
       const checker = setInterval(() => {
@@ -124,7 +133,7 @@ export class WebAudioPlayer {
       return;
     }
 
-    this.available[this.current].data.pause();
+    this.fadeOut(this.available[this.current].data);
   };
 
   resume = () => {

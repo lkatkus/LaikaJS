@@ -48,6 +48,46 @@ class TilesRenderer {
     return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
   }
 
+  static combineGeoWithTexData(geoArr, texArr, zIndex) {
+    return [
+      geoArr[0],
+      geoArr[1],
+      texArr[0],
+      texArr[1],
+      zIndex,
+
+      geoArr[2],
+      geoArr[3],
+      texArr[2],
+      texArr[3],
+      zIndex,
+
+      geoArr[4],
+      geoArr[5],
+      texArr[4],
+      texArr[5],
+      zIndex,
+
+      geoArr[6],
+      geoArr[7],
+      texArr[6],
+      texArr[7],
+      zIndex,
+
+      geoArr[8],
+      geoArr[9],
+      texArr[8],
+      texArr[9],
+      zIndex,
+
+      geoArr[10],
+      geoArr[11],
+      texArr[10],
+      texArr[11],
+      zIndex,
+    ];
+  }
+
   setup() {
     const gl = this.gl;
 
@@ -77,8 +117,7 @@ class TilesRenderer {
     this.geo_buff = gl.createBuffer();
     this.frame_buff = gl.createBuffer();
 
-    let geoBufferData = [];
-    let frameBufferData = [];
+    let dataBuffer = [];
 
     for (let tile of tilesToRender) {
       const frame = {
@@ -86,27 +125,25 @@ class TilesRenderer {
         y: tile.sy > 0 ? (tile.sy * tilesPerRow) / this.image.height : 0,
       };
 
-      geoBufferData.push(
-        ...TilesRenderer.createRectArray(
-          tile.dx,
-          tile.dy,
-          tile.dWidth,
-          tile.dHeight
-        )
-      );
-
-      frameBufferData.push(
-        ...TilesRenderer.createRectArray(
-          frame.x * this.uv_x,
-          frame.y * this.uv_y,
-          this.uv_x,
-          this.uv_x
+      dataBuffer.push(
+        ...TilesRenderer.combineGeoWithTexData(
+          TilesRenderer.createRectArray(
+            tile.dx,
+            tile.dy,
+            tile.dWidth,
+            tile.dHeight
+          ),
+          TilesRenderer.createRectArray(
+            frame.x * this.uv_x,
+            frame.y * this.uv_y,
+            this.uv_x,
+            this.uv_x
+          ),
         )
       );
     }
 
-    geoBufferData = new Float32Array(geoBufferData);
-    frameBufferData = new Float32Array(frameBufferData);
+    dataBuffer = new Float32Array(dataBuffer);
 
     gl.useProgram(this.material.program);
 
@@ -118,20 +155,24 @@ class TilesRenderer {
 
     this.uImageLoc = gl.getUniformLocation(this.material.program, 'u_image');
     this.uWorldLoc = gl.getUniformLocation(this.material.program, 'u_world');
+    this.uScaledWorldLoc = gl.getUniformLocation(
+      this.material.program,
+      'u_scaled_world'
+    );
 
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.gl_tex);
     gl.uniform1i(this.uImageLoc, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.frame_buff);
-    gl.bufferData(gl.ARRAY_BUFFER, frameBufferData, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(this.aFrameLoc);
-    gl.vertexAttribPointer(this.aFrameLoc, 2, gl.FLOAT, false, 0, 0);
-
     gl.bindBuffer(gl.ARRAY_BUFFER, this.geo_buff);
-    gl.bufferData(gl.ARRAY_BUFFER, geoBufferData, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(this.aPositionLoc);
-    gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 16 + 4, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.frame_buff);
+    gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(this.aFrameLoc);
+    gl.vertexAttribPointer(this.aFrameLoc, 2, gl.FLOAT, false, 16 + 4, 8);
 
     gl.uniformMatrix3fv(
       this.uWorldLoc,

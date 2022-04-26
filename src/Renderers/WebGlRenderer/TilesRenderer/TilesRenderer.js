@@ -4,13 +4,21 @@ import { Material } from '../Material';
 const TILES_VERTEX_SHADER = `
   attribute vec2 a_position;
   attribute vec2 a_frame;
-
+  attribute float a_depth;
+  
   uniform mat3 u_world;
+  uniform mat3 u_scaled_world;
   uniform mat3 u_object;
 
   varying vec2 v_texCoord;
+
   void main(){
-    gl_Position = vec4(u_world * vec3(a_position, 1), 1);
+    if (a_depth >= 1.0) {
+      gl_Position = vec4(u_world * vec3(a_position, 1), 1);
+    } else {
+      gl_Position = vec4(u_scaled_world * vec3(a_position, 1), 1);
+    }
+
     v_texCoord = a_frame;
   }
 `;
@@ -91,6 +99,8 @@ class TilesRenderer {
   setup() {
     const gl = this.gl;
 
+    this.data_buff = gl.createBuffer();
+
     gl.useProgram(this.material.program);
     this.gl_tex = gl.createTexture();
 
@@ -111,11 +121,8 @@ class TilesRenderer {
     gl.useProgram(null);
   }
 
-  render(tilesToRender, worldSpaceMatrix) {
+  render(tilesToRender, worldSpaceMatrix, scaledWorldSpace) {
     const { gl, tilesPerRow } = this;
-
-    this.geo_buff = gl.createBuffer();
-    this.frame_buff = gl.createBuffer();
 
     let dataBuffer = [];
 
@@ -139,6 +146,7 @@ class TilesRenderer {
             this.uv_x,
             this.uv_x
           ),
+          tile.zIndex
         )
       );
     }
@@ -152,6 +160,7 @@ class TilesRenderer {
       this.material.program,
       'a_position'
     );
+    this.aDepthLoc = gl.getAttribLocation(this.material.program, 'a_depth');
 
     this.uImageLoc = gl.getUniformLocation(this.material.program, 'u_image');
     this.uWorldLoc = gl.getUniformLocation(this.material.program, 'u_world');
@@ -164,20 +173,30 @@ class TilesRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this.gl_tex);
     gl.uniform1i(this.uImageLoc, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.geo_buff);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
     gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(this.aPositionLoc);
     gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 16 + 4, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.frame_buff);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
     gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
     gl.enableVertexAttribArray(this.aFrameLoc);
     gl.vertexAttribPointer(this.aFrameLoc, 2, gl.FLOAT, false, 16 + 4, 8);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
+    gl.bufferData(gl.ARRAY_BUFFER, dataBuffer, gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(this.aDepthLoc);
+    gl.vertexAttribPointer(this.aDepthLoc, 1, gl.FLOAT, false, 16 + 4, 16);
 
     gl.uniformMatrix3fv(
       this.uWorldLoc,
       false,
       worldSpaceMatrix.getFloatArray()
+    );
+    gl.uniformMatrix3fv(
+      this.uScaledWorldLoc,
+      false,
+      scaledWorldSpace.getFloatArray()
     );
 
     gl.drawArrays(gl.TRIANGLES, 0, tilesToRender.length * 6);

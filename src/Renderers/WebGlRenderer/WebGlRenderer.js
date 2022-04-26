@@ -9,10 +9,19 @@ class WebGlRenderer {
     this.gl = gl;
     this.screenWidth = drawingBufferWidth;
     this.screenHeight = drawingBufferHeight;
+    this.parallaxScaling = {
+      x: options.parallaxScaling?.x || 1,
+      y: options.parallaxScaling?.y || 1,
+    };
     this.wRatio = this.screenWidth / this.screenHeight;
 
     this.worldSpaceMatrix = new M3x3();
     this.worldSpaceMatrix = this.worldSpaceMatrix
+      .transition(-1, 1)
+      .scale(2 / this.screenWidth, -2 / this.screenHeight);
+
+    this.scaleWorldSpaceMatrix = new M3x3();
+    this.scaleWorldSpaceMatrix = this.worldSpaceMatrix
       .transition(-1, 1)
       .scale(2 / this.screenWidth, -2 / this.screenHeight);
 
@@ -59,7 +68,11 @@ class WebGlRenderer {
   }
 
   renderLevel(tilesToRender) {
-    this.bgRenderer.render(tilesToRender, this.worldSpaceMatrix);
+    this.bgRenderer.render(
+      tilesToRender,
+      this.worldSpaceMatrix,
+      this.scaleWorldSpaceMatrix
+    );
   }
 
   renderSprite(renderer, image, sx, sy, sWidth, sHeight, dx, dy) {
@@ -74,11 +87,19 @@ class WebGlRenderer {
   translate(x = 0, y = 0) {
     const nextOffsetX = -(this.offsetX - x);
     const nextOffsetY = -(this.offsetY - y);
+    const scaledNextOffsetX = -(this.offsetX - x / this.parallaxScaling.x);
+    const scaledNextOffsetY = -(this.offsetY - y / this.parallaxScaling.y);
 
     this.worldSpaceMatrix = this.worldSpaceMatrix.transition(
       nextOffsetX,
       nextOffsetY
     );
+    this.scaleWorldSpaceMatrix = this.worldSpaceMatrix.transition(
+      scaledNextOffsetX,
+      scaledNextOffsetY
+    );
+
+    console.log(nextOffsetX, nextOffsetY, scaledNextOffsetX, scaledNextOffsetY);
 
     this.offsetX = x;
     this.offsetY = y;

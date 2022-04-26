@@ -9,7 +9,9 @@ class Game {
     const loadingHandlers = [];
 
     this.onDraw = onDraw;
-    this.renderer = config.initRenderer();
+    this.renderer = config.initRenderer({
+      parallaxScaling: config.level.parallaxScaling,
+    });
 
     if (config.initAudioPlayer) {
       this.audioPlayer = config.initAudioPlayer(config.options.audio);

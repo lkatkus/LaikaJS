@@ -3,14 +3,7 @@ import LevelTile from './LevelTile';
 
 class LevelManager {
   constructor(renderer, config) {
-    this.spawnMarker = config.spawnMarker;
-    this.spriteSize = config.tileSheet.spriteSize;
-    this.tilesPerRow = config.tileSheet.tilesPerRow;
-    this.tileTypes = config.tileSheet.types;
-    this.levelLayout = {
-      rows: config.layout.length,
-      cols: config.layout[0].length,
-    };
+    this.setParams(config);
 
     renderer.initBackgroundRenderer(config.tileSheet.src, {
       size: this.spriteSize,
@@ -26,11 +19,43 @@ class LevelManager {
 
     this.setTileSize(renderer.screenWidth, renderer.screenHeight);
     this.setTileContainer(config.layout);
+    this.setBackgroundTileContainer(config.bgLayout);
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = config.tileSheet.src;
       resolve();
     });
+  }
+
+  setParams(config) {
+    const {
+      spawnMarker,
+      tileSheet,
+      layout,
+      backgroundLayout,
+      parallaxScaling,
+    } = config;
+
+    this.spawnMarker = spawnMarker;
+    this.spriteSize = tileSheet.spriteSize;
+    this.tilesPerRow = tileSheet.tilesPerRow;
+    this.tileTypes = tileSheet.types;
+    this.parallaxScaling = {
+      x: parallaxScaling?.x || 1,
+      y: parallaxScaling?.y || 1,
+    };
+
+    this.levelLayout = {
+      rows: layout.length,
+      cols: layout[0].length,
+    };
+
+    if (backgroundLayout) {
+      this.backgroundLayout = {
+        rows: backgroundLayout.length,
+        cols: backgroundLayout[0].length,
+      };
+    }
   }
 
   setTileSize(width, height) {
@@ -94,14 +119,41 @@ class LevelManager {
     );
   }
 
+  setBackgroundTileContainer(levelLayout) {
+    if (levelLayout) {
+      this.backgroundLayout = {
+        rows: levelLayout.length,
+        cols: levelLayout[0].length,
+      };
+
+      this.bgTileContainer = levelLayout.map((layoutRow, row) =>
+        layoutRow.map(
+          (type, col) =>
+            new LevelTile(
+              row,
+              col,
+              this.TILE_SIZE,
+              this.levelTextureManager.getTexture(type),
+              type
+            )
+        )
+      );
+    }
+  }
+
   updateVisibleTiles() {
     let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 1;
+    // @TODO make parallax scaling configurable
+    let leftColScaled =
+      Math.floor(this.cameraOffsetX / this.parallaxScaling.x / this.TILE_SIZE) -
+      1;
 
     if (leftCol < 0) {
       leftCol = 0;
     }
 
     let rightCol = leftCol + this.colsOnScreen + 1;
+    let rightColScaled = leftCol + this.colsOnScreen + 1;
 
     if (rightCol > this.levelLayout.cols) {
       rightCol = this.levelLayout.cols;
@@ -112,19 +164,67 @@ class LevelManager {
       topRow = 0;
     }
 
+    let topRowScaled =
+      Math.floor(this.cameraOffsetY / this.parallaxScaling.y / this.TILE_SIZE) -
+      1;
+    if (topRowScaled < 0) {
+      topRowScaled = 0;
+    }
+
     let bottomRow = topRow + this.rowsOnScreen + 1;
     if (bottomRow > this.levelLayout.rows) {
       bottomRow = this.levelLayout.rows;
+    }
+
+    let bottomRowScale = topRowScaled + this.rowsOnScreen + 1;
+    if (bottomRowScale > this.backgroundLayout.rows) {
+      bottomRowScale = this.backgroundLayout.rows;
     }
 
     this.visibleLeftCol = leftCol;
     this.visibleRightCol = rightCol;
     this.visibleTopRow = topRow;
     this.visibleBottomRow = bottomRow;
+
+    this.visibleLeftColScaled = leftColScaled;
+    this.visibleRightColScaled = rightColScaled;
+    this.visibleTopRowScale = topRowScaled;
+    this.visibleBottomRowScale = bottomRowScale;
   }
 
   drawForeground(drawFn) {
     const visibleTiles = [];
+
+    // Push order is important, determines rendering order
+    if (this.bgTileContainer) {
+      for (
+        let rowIndex = this.visibleTopRowScale;
+        rowIndex <= this.visibleBottomRowScale;
+        rowIndex++
+      ) {
+        for (
+          let colIndex = this.visibleLeftColScaled;
+          colIndex <= this.visibleRightColScaled;
+          colIndex++
+        ) {
+          const bgTile = this.getTile(rowIndex, colIndex, this.bgTileContainer);
+
+          if (bgTile && !this.tileTypes.nonTexture.includes(bgTile.type)) {
+            visibleTiles.push({
+              sx: bgTile.texture.x,
+              sy: bgTile.texture.y,
+              sWidth: this.spriteSize,
+              sHeight: this.spriteSize,
+              dx: bgTile.x,
+              dy: bgTile.y,
+              dWidth: bgTile.width,
+              dHeight: bgTile.height,
+              zIndex: 0,
+            });
+          }
+        }
+      }
+    }
 
     for (
       let rowIndex = this.visibleTopRow;
@@ -136,7 +236,7 @@ class LevelManager {
         colIndex <= this.visibleRightCol;
         colIndex++
       ) {
-        const tile = this.getTile(rowIndex, colIndex);
+        const tile = this.getTile(rowIndex, colIndex, this.tileContainer);
 
         if (tile && !this.tileTypes.nonTexture.includes(tile.type)) {
           visibleTiles.push({
@@ -148,6 +248,7 @@ class LevelManager {
             dy: tile.y,
             dWidth: tile.width,
             dHeight: tile.height,
+            zIndex: 1,
           });
         }
       }
@@ -172,17 +273,19 @@ class LevelManager {
     this.drawForeground(drawFn);
   }
 
-  getTile(row, col) {
+  getTile(row, col, tileContainer) {
+    const tiles = tileContainer || this.tileContainer;
+
     if (
       row < 0 ||
-      row > this.tileContainer.length - 1 ||
+      row > tiles.length - 1 ||
       col < 0 ||
-      col > this.tileContainer[0].length - 1
+      col > tiles[0].length - 1
     ) {
       return null;
     }
 
-    return this.tileContainer[row][col];
+    return tiles[row][col];
   }
 
   canClimbTile(type) {

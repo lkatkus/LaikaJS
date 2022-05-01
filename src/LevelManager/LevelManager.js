@@ -20,6 +20,7 @@ class LevelManager {
     this.setTileSize(renderer.screenWidth, renderer.screenHeight);
     this.setTileContainer(config.layout);
     this.setBackgroundTileContainer(config.bgLayout);
+    this.setForegroundTileContainer(config.fgLayout);
 
     this.loadingHandler = new Promise((resolve) => {
       this.textureSheet = config.tileSheet.src;
@@ -33,6 +34,7 @@ class LevelManager {
       tileSheet,
       layout,
       backgroundLayout,
+      foregroundLayout,
       parallaxScaling,
     } = config;
 
@@ -54,6 +56,13 @@ class LevelManager {
       this.backgroundLayout = {
         rows: backgroundLayout.length,
         cols: backgroundLayout[0].length,
+      };
+    }
+
+    if (foregroundLayout) {
+      this.foregroundLayout = {
+        rows: foregroundLayout.length,
+        cols: foregroundLayout[0].length,
       };
     }
   }
@@ -141,6 +150,28 @@ class LevelManager {
     }
   }
 
+  setForegroundTileContainer(levelLayout) {
+    if (levelLayout) {
+      this.foregroundLayout = {
+        rows: levelLayout.length,
+        cols: levelLayout[0].length,
+      };
+
+      this.fgTileContainer = levelLayout.map((layoutRow, row) =>
+        layoutRow.map(
+          (type, col) =>
+            new LevelTile(
+              row,
+              col,
+              this.TILE_SIZE,
+              this.levelTextureManager.getTexture(type),
+              type
+            )
+        )
+      );
+    }
+  }
+
   updateVisibleTiles() {
     let leftCol = Math.floor(this.cameraOffsetX / this.TILE_SIZE) - 1;
     // @TODO make parallax scaling configurable
@@ -192,10 +223,9 @@ class LevelManager {
     this.visibleBottomRowScale = bottomRowScale;
   }
 
-  drawForeground(drawFn) {
+  drawBackground(drawFn) {
     const visibleTiles = [];
 
-    // Push order is important, determines rendering order
     if (this.bgTileContainer) {
       for (
         let rowIndex = this.visibleTopRowScale;
@@ -225,6 +255,14 @@ class LevelManager {
         }
       }
     }
+
+    if (visibleTiles.length > 0) {
+      drawFn(visibleTiles);
+    }
+  }
+
+  drawStage(drawFn) {
+    const visibleTiles = [];
 
     for (
       let rowIndex = this.visibleTopRow;
@@ -259,7 +297,45 @@ class LevelManager {
     }
   }
 
-  draw(drawFn, newOffsetX, newOffsetY) {
+  drawForeground(drawFn) {
+    const visibleTiles = [];
+
+    if (this.fgTileContainer) {
+      for (
+        let rowIndex = this.visibleTopRowScale;
+        rowIndex <= this.visibleBottomRowScale;
+        rowIndex++
+      ) {
+        for (
+          let colIndex = this.visibleLeftColScaled;
+          colIndex <= this.visibleRightColScaled;
+          colIndex++
+        ) {
+          const bgTile = this.getTile(rowIndex, colIndex, this.fgTileContainer);
+
+          if (bgTile && !this.tileTypes.nonTexture.includes(bgTile.type)) {
+            visibleTiles.push({
+              sx: bgTile.texture.x,
+              sy: bgTile.texture.y,
+              sWidth: this.spriteSize,
+              sHeight: this.spriteSize,
+              dx: bgTile.x,
+              dy: bgTile.y,
+              dWidth: bgTile.width,
+              dHeight: bgTile.height,
+              zIndex: 0,
+            });
+          }
+        }
+      }
+    }
+
+    if (visibleTiles.length > 0) {
+      drawFn(visibleTiles);
+    }
+  }
+
+  onBeforeDraw(newOffsetX, newOffsetY) {
     if (
       this.cameraOffsetX !== newOffsetX ||
       this.cameraOffsetY !== newOffsetY
@@ -269,8 +345,6 @@ class LevelManager {
 
       this.updateVisibleTiles();
     }
-
-    this.drawForeground(drawFn);
   }
 
   getTile(row, col, tileContainer) {

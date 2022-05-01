@@ -52,11 +52,11 @@ class TilesRenderer {
     this.setup();
   }
 
-  static createRectArray(x = 0, y = 0, w = 1, h = 1) {
+  createRectArray(x = 0, y = 0, w = 1, h = 1) {
     return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
   }
 
-  static combineGeoWithTexData(geoArr, texArr, zIndex) {
+  combineGeoWithTexData(geoArr, texArr, zIndex) {
     return [
       geoArr[0],
       geoArr[1],
@@ -133,14 +133,9 @@ class TilesRenderer {
       };
 
       dataBuffer.push(
-        ...TilesRenderer.combineGeoWithTexData(
-          TilesRenderer.createRectArray(
-            tile.dx,
-            tile.dy,
-            tile.dWidth,
-            tile.dHeight
-          ),
-          TilesRenderer.createRectArray(
+        ...this.combineGeoWithTexData(
+          this.createRectArray(tile.dx, tile.dy, tile.dWidth, tile.dHeight),
+          this.createRectArray(
             frame.x * this.uv_x,
             frame.y * this.uv_y,
             this.uv_x,

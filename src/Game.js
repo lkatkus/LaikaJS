@@ -84,14 +84,16 @@ class Game {
     );
     this.renderer.translate(this.camera.offsetX, this.camera.offsetY);
 
-    this.level.draw(
-      this.renderer.renderLevel,
-      this.camera.offsetX,
-      this.camera.offsetY
-    );
-    this.npcManager &&
+    this.level.onBeforeDraw(this.camera.offsetX, this.camera.offsetY);
+    this.level.drawBackground(this.renderer.renderLevel);
+    this.level.drawStage(this.renderer.renderLevel);
+
+    if (this.npcManager) {
       this.npcManager.draw(this.renderer.renderSprite, deltaTime);
+    }
     this.player.draw(this.renderer.renderSprite, deltaTime);
+
+    this.level.drawForeground(this.renderer.renderLevel);
 
     this.renderer.onAfterRender();
 

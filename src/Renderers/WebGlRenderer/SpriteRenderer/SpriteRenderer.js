@@ -10,6 +10,7 @@ const VERTEX_SHADER = `
   uniform vec2 u_frame;
 
   varying vec2 v_texCoord;
+
   void main(){
     gl_Position = vec4(u_world * u_object * vec3(a_position, 1), 1);
     v_texCoord = a_texCoord + u_frame;
@@ -18,30 +19,15 @@ const VERTEX_SHADER = `
 
 const FRAGMENT_SHADER = `
   precision mediump float;
+
   uniform sampler2D u_image;
+
   varying vec2 v_texCoord;
 
   void main(){
     gl_FragColor = texture2D(u_image, v_texCoord);
   }
 `;
-
-const createRectArray = (x = 0, y = 0, w = 1, h = 1) => {
-  return new Float32Array([
-    x,
-    y,
-    x + w,
-    y,
-    x,
-    y + h,
-    x,
-    y + h,
-    x + w,
-    y,
-    x + w,
-    y + h,
-  ]);
-};
 
 class SpriteRenderer {
   constructor(gl, img_url, options = {}) {
@@ -69,6 +55,44 @@ class SpriteRenderer {
     this.setup();
   }
 
+  createRectArray(x = 0, y = 0, w = 1, h = 1) {
+    return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
+  }
+
+  combineGeoWithTexData(geoArr, texArr) {
+    return [
+      geoArr[0],
+      geoArr[1],
+      texArr[0],
+      texArr[1],
+
+      geoArr[2],
+      geoArr[3],
+      texArr[2],
+      texArr[3],
+
+      geoArr[4],
+      geoArr[5],
+      texArr[4],
+      texArr[5],
+
+      geoArr[6],
+      geoArr[7],
+      texArr[6],
+      texArr[7],
+
+      geoArr[8],
+      geoArr[9],
+      texArr[8],
+      texArr[9],
+
+      geoArr[10],
+      geoArr[11],
+      texArr[10],
+      texArr[11],
+    ];
+  }
+
   setup() {
     let gl = this.gl;
 
@@ -93,26 +117,21 @@ class SpriteRenderer {
     this.uv_x = this.size.x / this.image.width;
     this.uv_y = this.size.y / this.image.height;
 
-    this.tex_buff = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tex_buff);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      createRectArray(0, 0, this.uv_x, this.uv_y),
-      gl.STATIC_DRAW
-    );
-
-    this.geo_buff = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.geo_buff);
-    gl.bufferData(
-      gl.ARRAY_BUFFER,
-      createRectArray(
+    let dataBuffData = this.combineGeoWithTexData(
+      this.createRectArray(
         0,
         0,
         this.size.renderWidth || this.size.x,
         this.size.renderHeight || this.size.y
       ),
-      gl.STATIC_DRAW
+      this.createRectArray(0, 0, this.uv_x, this.uv_y)
     );
+
+    dataBuffData = new Float32Array(dataBuffData);
+
+    this.data_buff = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
+    gl.bufferData(gl.ARRAY_BUFFER, dataBuffData, gl.STATIC_DRAW);
 
     this.aPositionLoc = gl.getAttribLocation(
       this.material.program,
@@ -152,13 +171,13 @@ class SpriteRenderer {
     gl.bindTexture(gl.TEXTURE_2D, this.gl_tex);
     gl.uniform1i(this.uImageLoc, 0);
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.tex_buff);
-    gl.enableVertexAttribArray(this.aTexcoordLoc);
-    gl.vertexAttribPointer(this.aTexcoordLoc, 2, gl.FLOAT, false, 0, 0);
-
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.geo_buff);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
     gl.enableVertexAttribArray(this.aPositionLoc);
-    gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 16, 0);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
+    gl.enableVertexAttribArray(this.aTexcoordLoc);
+    gl.vertexAttribPointer(this.aTexcoordLoc, 2, gl.FLOAT, false, 16, 8);
 
     gl.uniform2f(this.uFrameLoc, frame_x, frame_y);
     gl.uniformMatrix3fv(this.uObjectLoc, false, oMat.getFloatArray());

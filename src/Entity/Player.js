@@ -198,7 +198,7 @@ class Player extends Entity {
           this.col = nextTile.col;
           this.x = !this.isFalling
             ? this.x + offsetSpeedX
-            : this.x + offsetSpeedX / 2;
+            : this.x + offsetSpeedX;
         }
 
         break;
@@ -208,7 +208,7 @@ class Player extends Entity {
           this.col = nextTile.col;
           this.x = !this.isFalling
             ? this.x - offsetSpeedX
-            : this.x - offsetSpeedX / 2;
+            : this.x - offsetSpeedX;
         }
 
         break;

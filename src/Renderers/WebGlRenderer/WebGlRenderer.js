@@ -99,8 +99,6 @@ class WebGlRenderer {
       scaledNextOffsetY
     );
 
-    console.log(nextOffsetX, nextOffsetY, scaledNextOffsetX, scaledNextOffsetY);
-
     this.offsetX = x;
     this.offsetY = y;
   }

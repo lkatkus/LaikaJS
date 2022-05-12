@@ -249,7 +249,8 @@ class LevelManager {
               dy: bgTile.y,
               dWidth: bgTile.width,
               dHeight: bgTile.height,
-              zIndex: 0,
+              // @TODO update, when parallax twitching is fixid
+              zIndex: 1,
             });
           }
         }
@@ -323,7 +324,7 @@ class LevelManager {
               dy: bgTile.y,
               dWidth: bgTile.width,
               dHeight: bgTile.height,
-              zIndex: 0,
+              zIndex: 1,
             });
           }
         }

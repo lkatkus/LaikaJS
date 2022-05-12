@@ -91,9 +91,16 @@ class Game {
     if (this.npcManager) {
       this.npcManager.draw(this.renderer.renderSprite, deltaTime);
     }
+
+    if (this.player.canFly) {
+      this.level.drawForeground(this.renderer.renderLevel);
+    }
+
     this.player.draw(this.renderer.renderSprite, deltaTime);
 
-    this.level.drawForeground(this.renderer.renderLevel);
+    if (!this.player.canFly) {
+      this.level.drawForeground(this.renderer.renderLevel);
+    }
 
     this.renderer.onAfterRender();
 

@@ -87,8 +87,13 @@ class WebGlRenderer {
   translate(x = 0, y = 0) {
     const nextOffsetX = -(this.offsetX - x);
     const nextOffsetY = -(this.offsetY - y);
-    const scaledNextOffsetX = -(this.offsetX - x / this.parallaxScaling.x);
-    const scaledNextOffsetY = -(this.offsetY - y / this.parallaxScaling.y);
+    // @TODO handle twitching, when changing offset
+    const scaledNextOffsetX = -(
+      this.offsetX - Math.floor(x / this.parallaxScaling.x)
+    );
+    const scaledNextOffsetY = -(
+      this.offsetY - Math.floor(y / this.parallaxScaling.y)
+    );
 
     this.worldSpaceMatrix = this.worldSpaceMatrix.transition(
       nextOffsetX,

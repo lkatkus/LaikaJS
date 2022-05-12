@@ -6,7 +6,7 @@ class Camera {
 
   setInitialCamera(screenWidth, screenHeight) {
     this.offsetX = -this.level.spawnX + screenWidth / 2 - this.level.TILE_SIZE;
-    this.offsetY = -(this.level.spawnY - screenHeight / 2);
+    this.offsetY = -(this.level.spawnY - (screenHeight / 10) * 6);
   }
 
   resetCameraOffset(screenWidth, screenHeight) {
@@ -24,9 +24,9 @@ class Camera {
       this.offsetX = this.offsetX + offsetSpeedX;
     }
 
-    if (this.player.y + this.offsetY < (screenHeight / 10) * 4) {
+    if (this.player.y + this.offsetY < (screenHeight / 10) * 5) {
       this.offsetY = this.offsetY + offsetSpeedY;
-    } else if (this.player.y + this.offsetY > (screenHeight / 10) * 6) {
+    } else if (this.player.y + this.offsetY >= (screenHeight / 10) * 6) {
       const offsetUpdate = this.player.isFalling
         ? this.player.speedFall
         : offsetSpeedY;

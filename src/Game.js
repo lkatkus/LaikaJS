@@ -5,26 +5,46 @@ import { Npc, Player } from './Entity';
 import { EntinyManager } from './EntinyManager';
 
 class Game {
-  constructor(config, { onLoadGame, onDraw }) {
+  constructor(config, { onAfterInit, onLoadGame, onDraw }) {
     const loadingHandlers = [];
 
     this.onDraw = onDraw;
-    this.drawFn = this.drawFn.bind(this);
+    this.renderer = config.initRenderer({
+      parallaxScaling: config.level.parallaxScaling,
+    });
+
+    if (config.initAudioPlayer) {
+      this.audioPlayer = config.initAudioPlayer(config.options.audio);
+    }
+
     this.mainDraw = this.mainDraw.bind(this);
     this.handleResize = this.handleResize.bind(this);
     this.startGame = this.startGame.bind(this);
 
-    this.setCanvas(config.canvas);
-
-    this.level = new LevelManager(this.canvas, config.level);
+    this.level = new LevelManager(this.renderer, config.level);
     loadingHandlers.push(this.level.loadingHandler);
-    this.player = new Player(this.level, config.player);
+
+    this.player = new Player(
+      this.level,
+      config.player,
+      this.renderer.initSpriteRenderer
+    );
     loadingHandlers.push(this.player.loadingHandler);
+
     this.camera = new Camera(this.level, this.player);
-    this.camera.setInitialCamera(this.canvas.width, this.canvas.height);
+    this.camera.setInitialCamera(
+      this.renderer.screenWidth,
+      this.renderer.screenHeight
+    );
 
     if (config.npc) {
-      this.npcManager = new EntinyManager(this.level, config.npc, Npc);
+      this.npcManager = new EntinyManager(
+        this.level,
+        config.npc,
+        Npc,
+        this.renderer.initSpriteRenderer
+      );
+
       loadingHandlers.push(this.npcManager.loadingHandler);
     }
 
@@ -35,60 +55,68 @@ class Game {
       });
     }
 
+    onAfterInit && onAfterInit(this);
+
     Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }
 
-  setCanvas(canvas) {
-    this.canvas = canvas;
-    this.context = this.canvas.getContext('2d');
-
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-
-    window.addEventListener('resize', this.handleResize);
-  }
-
-  handleResize() {
+  handleResize(screenWidth, screenHeight) {
     window.cancelAnimationFrame(this.drawInterval);
 
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-
-    this.level.resetTileSize(this.canvas);
+    this.level.resetTileSize(screenWidth, screenHeight);
     this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
     this.player.resetPosition(this.level.TILE_SIZE);
-    this.camera.resetCameraOffset(this.canvas.width, this.canvas.height);
+    this.camera.resetCameraOffset(screenWidth, screenHeight);
 
     window.requestAnimationFrame(this.mainDraw);
   }
 
-  drawFn(...props) {
-    /**
-     * @todo add adbility to pass drawFn from outside.
-     * E.x. webgl context wrapper or something like that
-     */
-    this.context.drawImage(...props);
-  }
+  mainDraw(currentTime) {
+    const deltaTime = (currentTime - this.previousTime) / 1000.0;
+    this.previousTime = currentTime;
 
-  mainDraw() {
-    this.camera.updateCameraOffset(this.canvas.width, this.canvas.height);
+    this.renderer.onBeforeRender();
 
-    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.context.save();
-    this.context.translate(this.camera.offsetX, this.camera.offsetY);
+    this.camera.updateCameraOffset(
+      this.renderer.screenWidth,
+      this.renderer.screenHeight,
+      deltaTime
+    );
+    this.renderer.translate(this.camera.offsetX, this.camera.offsetY);
 
-    this.level.draw(this.drawFn, this.camera.offsetX, this.camera.offsetY);
-    this.npcManager && this.npcManager.draw(this.drawFn, this.level.TILE_SIZE);
-    this.player.draw(this.drawFn, this.level.TILE_SIZE);
-    this.onDraw && this.onDraw();
-    this.context.restore();
+    this.level.onBeforeDraw(this.camera.offsetX, this.camera.offsetY);
+    this.level.drawBackground(this.renderer.renderLevel);
+    this.level.drawStage(this.renderer.renderLevel);
+
+    if (this.npcManager) {
+      this.npcManager.draw(this.renderer.renderSprite, deltaTime);
+    }
+
+    if (this.player.canFly) {
+      this.level.drawForeground(this.renderer.renderLevel);
+    }
+
+    this.player.draw(this.renderer.renderSprite, deltaTime);
+
+    if (!this.player.canFly) {
+      this.level.drawForeground(this.renderer.renderLevel);
+    }
+
+    this.renderer.onAfterRender();
 
     this.drawInterval = window.requestAnimationFrame(this.mainDraw);
     this.eventManager && this.eventManager.checkEvent(this.player);
+
+    this.onDraw && this.onDraw(this);
   }
 
   startGame() {
-    window.requestAnimationFrame(this.mainDraw);
+    window.requestAnimationFrame(
+      function (currentTime) {
+        this.previousTime = currentTime;
+        this.mainDraw(currentTime);
+      }.bind(this)
+    );
   }
 }
 

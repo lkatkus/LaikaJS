@@ -1,7 +1,7 @@
 class EntinyManager {
-  constructor(level, entitiesConfig, Entity) {
+  constructor(level, entitiesConfig, Entity, initRenderer) {
     this.entities = entitiesConfig.map(
-      (entityConfig) => new Entity(level, entityConfig)
+      (entityConfig) => new Entity(level, entityConfig, initRenderer)
     );
 
     this.loadingHandler = new Promise((resolve) => {
@@ -19,9 +19,9 @@ class EntinyManager {
     });
   }
 
-  draw(context, tileSize) {
+  draw(drawFn, deltaTime) {
     this.entities.map((entity) => {
-      entity.draw(context, tileSize);
+      entity.draw(drawFn, deltaTime);
     });
   }
 }

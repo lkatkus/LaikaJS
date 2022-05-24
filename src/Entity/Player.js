@@ -7,11 +7,11 @@ import {
 } from './Player.constants';
 
 class Player extends Entity {
-  constructor(level, config) {
-    super(level, level.initialPlayerLocation, config);
+  constructor(level, config, initRenderer) {
+    super(level, level.initialPlayerLocation, config, initRenderer);
     this.canFly = false;
 
-    this.setControls();
+    this.updateAnchor(level.TILE_SIZE);
   }
 
   setControls() {
@@ -23,7 +23,7 @@ class Player extends Entity {
 
     document.addEventListener('keyup', (event) => {
       if (MOVEMENT_KEY_CODES.includes(event.keyCode)) {
-        this.moveEnd(MOVEMENT_KEYS[event.key]);
+        this.moveEnd();
       }
     });
 
@@ -49,9 +49,9 @@ class Player extends Entity {
         }
       } else if (changeX >= changeY && changeX < 30) {
         if (touchEvents.startX > touchEvents.moveX) {
-          this.moveEnd(MOVEMENT_DIRECTION.left);
+          this.moveEnd();
         } else if (touchEvents.startX < touchEvents.moveX) {
-          this.moveEnd(MOVEMENT_DIRECTION.right);
+          this.moveEnd();
         }
       }
 
@@ -63,9 +63,9 @@ class Player extends Entity {
         }
       } else if (changeY >= changeX && changeY < 30) {
         if (touchEvents.startY > touchEvents.moveY) {
-          this.moveEnd(MOVEMENT_DIRECTION.up);
+          this.moveEnd();
         } else if (touchEvents.startY < touchEvents.moveY) {
-          this.moveEnd(MOVEMENT_DIRECTION.down);
+          this.moveEnd();
         }
       }
     });
@@ -98,10 +98,7 @@ class Player extends Entity {
   }
 
   levelUp(newTexture, config) {
-    const newTextureSheet = new Image();
-    newTextureSheet.src = newTexture;
-
-    this.textureSheet = newTextureSheet;
+    this.renderer.updateTexture(newTexture, this.level.TILE_SIZE);
 
     for (let prop in config) {
       this[prop] = config[prop];
@@ -159,26 +156,31 @@ class Player extends Entity {
     }
   }
 
-  move(tileSize) {
+  move(tileSize, deltaTime) {
     let nextRow;
     let nextCol;
     let nextTile;
 
+    const offsetSpeedX = this.speedX * deltaTime;
+    const offsetSpeedY = this.speedY * deltaTime;
+
     switch (this.direction) {
       case MOVEMENT_DIRECTION.right:
         nextRow = Math.floor(this.y / tileSize);
-        nextCol = Math.floor((this.x + tileSize + this.speedX) / tileSize);
+        nextCol = Math.floor(
+          (this.anchorX + tileSize + offsetSpeedX) / tileSize
+        );
         break;
       case MOVEMENT_DIRECTION.left:
         nextRow = Math.floor(this.y / tileSize);
-        nextCol = Math.floor((this.x - this.speedX) / tileSize);
+        nextCol = Math.floor((this.x - offsetSpeedX) / tileSize);
         break;
       case MOVEMENT_DIRECTION.up:
-        nextRow = Math.floor((this.y + tileSize - this.speedY) / tileSize);
+        nextRow = Math.floor((this.y + tileSize - offsetSpeedY) / tileSize);
         nextCol = Math.floor(this.anchorX / tileSize);
         break;
       case MOVEMENT_DIRECTION.down:
-        nextRow = Math.floor((this.y + tileSize + this.speedY) / tileSize);
+        nextRow = Math.floor((this.y + tileSize + offsetSpeedY) / tileSize);
         nextCol = Math.floor(this.anchorX / tileSize);
         break;
     }
@@ -195,8 +197,8 @@ class Player extends Entity {
           this.tileRowOffset = this.isFalling ? 6 : 0;
           this.col = nextTile.col;
           this.x = !this.isFalling
-            ? this.x + this.speedX
-            : this.x + this.speedX / 2;
+            ? this.x + offsetSpeedX
+            : this.x + offsetSpeedX;
         }
 
         break;
@@ -205,8 +207,8 @@ class Player extends Entity {
           this.tileRowOffset = this.isFalling ? 7 : 1;
           this.col = nextTile.col;
           this.x = !this.isFalling
-            ? this.x - this.speedX
-            : this.x - this.speedX / 2;
+            ? this.x - offsetSpeedX
+            : this.x - offsetSpeedX;
         }
 
         break;
@@ -217,12 +219,12 @@ class Player extends Entity {
 
         if (this.canFly) {
           this.row = nextTile.row;
-          this.y = this.y - this.speedY > 0 ? this.y - this.speedY : 0;
+          this.y = this.y - offsetSpeedY > 0 ? this.y - offsetSpeedY : 0;
         } else if (this.level.canClimbTile(nextTile.type)) {
           this.isOnLadder = true;
           this.tileRowOffset = 4;
           this.row = nextTile.row;
-          this.y = this.y - this.speedY;
+          this.y = this.y - offsetSpeedY;
         } else {
           this.isOnLadder = false;
           this.tileRowOffset = 2;
@@ -238,12 +240,12 @@ class Player extends Entity {
 
         if (this.canFly) {
           this.row = nextTile.row - 1;
-          this.y = this.y + this.speedY;
+          this.y = this.y + offsetSpeedY;
         } else if (this.level.canClimbTile(nextTile.type)) {
           this.isOnLadder = true;
           this.tileRowOffset = 5;
           this.row = nextTile.row - 1;
-          this.y = this.y + this.speedY;
+          this.y = this.y + offsetSpeedY;
         } else {
           this.isOnLadder = false;
           this.tileRowOffset = 2;
@@ -263,10 +265,10 @@ class Player extends Entity {
     this.direction = direction;
   }
 
-  moveEnd(direction) {
+  moveEnd() {
     this.isMoving = false;
 
-    switch (direction) {
+    switch (this.direction) {
       case 'right':
         if (!this.isOnLadder) {
           this.tileRowOffset = this.isFalling ? 6 : 2;

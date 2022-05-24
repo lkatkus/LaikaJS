@@ -1,7 +1,7 @@
 import Entity from './Entity';
 
 class Npc extends Entity {
-  constructor(level, config) {
+  constructor(level, config, initRenderer) {
     const spawnTile = level.getTile(config.min.row, config.min.col);
 
     if (!spawnTile) {
@@ -10,7 +10,7 @@ class Npc extends Entity {
       );
     }
 
-    super(level, spawnTile, config);
+    super(level, spawnTile, config, initRenderer);
 
     this.config = config;
 
@@ -40,29 +40,15 @@ class Npc extends Entity {
     }
   }
 
-  move(tileSize) {
+  move(tileSize, deltaTime) {
+    const offsetSpeedX = this.speedX * deltaTime;
+    const offsetSpeedY = this.speedY * deltaTime;
+
     this.row = Math.floor(this.y / tileSize);
     this.col = Math.floor(this.x / tileSize);
-
-    // TODO use consts for direction
-    switch (this.direction) {
-      case 'right':
-        this.tileRowOffset = 0;
-        this.x = this.x + this.speedX;
-        break;
-      case 'left':
-        this.tileRowOffset = 1;
-        this.x = this.x - this.speedX;
-        break;
-      case 'up':
-        this.y = this.y - this.speedY;
-        break;
-      case 'down':
-        this.y = this.y + this.speedY;
-        break;
-    }
-
+    
     if (this.col >= this.config.max.col && this.direction === 'right') {
+      this.x = Math.floor(this.config.max.col * tileSize)
       this.moveEnd(this.direction);
       this.tileRowOffset = 2;
 
@@ -72,12 +58,31 @@ class Npc extends Entity {
     }
 
     if (this.col < this.config.min.col && this.direction === 'left') {
+      this.x = Math.floor(this.config.min.col * tileSize)
       this.moveEnd(this.direction);
       this.tileRowOffset = 3;
 
       return setTimeout(() => {
         this.moveStart('right');
       }, 5000);
+    }
+
+    // TODO use consts for direction
+    switch (this.direction) {
+      case 'right':
+        this.tileRowOffset = 0;
+        this.x = this.x + offsetSpeedX;
+        break;
+      case 'left':
+        this.tileRowOffset = 1;
+        this.x = this.x - offsetSpeedX;
+        break;
+      case 'up':
+        this.y = this.y - offsetSpeedY;
+        break;
+      case 'down':
+        this.y = this.y + offsetSpeedY;
+        break;
     }
   }
 }

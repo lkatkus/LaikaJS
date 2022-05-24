@@ -94,9 +94,19 @@ class SpriteRenderer {
   }
 
   setup() {
-    let gl = this.gl;
+    const { gl } = this;
 
     gl.useProgram(this.material.program);
+
+    this.initTexture();
+    this.initAttrs();
+
+    gl.useProgram(null);
+  }
+
+  initTexture() {
+    const { gl } = this;
+
     this.gl_tex = gl.createTexture();
 
     gl.bindTexture(gl.TEXTURE_2D, this.gl_tex);
@@ -112,7 +122,12 @@ class SpriteRenderer {
       gl.UNSIGNED_BYTE,
       this.image
     );
+
     gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+
+  initAttrs() {
+    const { gl } = this;
 
     this.uv_x = this.size.x / this.image.width;
     this.uv_y = this.size.y / this.image.height;
@@ -130,6 +145,7 @@ class SpriteRenderer {
     dataBuffData = new Float32Array(dataBuffData);
 
     this.data_buff = gl.createBuffer();
+
     gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
     gl.bufferData(gl.ARRAY_BUFFER, dataBuffData, gl.STATIC_DRAW);
 
@@ -141,12 +157,14 @@ class SpriteRenderer {
       this.material.program,
       'a_texCoord'
     );
+
+    gl.enableVertexAttribArray(this.aPositionLoc);
+    gl.enableVertexAttribArray(this.aTexcoordLoc);
+
     this.uImageLoc = gl.getUniformLocation(this.material.program, 'u_image');
     this.uWorldLoc = gl.getUniformLocation(this.material.program, 'u_world');
     this.uObjectLoc = gl.getUniformLocation(this.material.program, 'u_object');
     this.uFrameLoc = gl.getUniformLocation(this.material.program, 'u_frame');
-
-    gl.useProgram(null);
   }
 
   updateTexture(newImage, tileSize) {
@@ -159,7 +177,7 @@ class SpriteRenderer {
   }
 
   render(position = { x: 0, y: 0 }, frames = { x: 0, y: 0 }, worldSpaceMatrix) {
-    let gl = this.gl;
+    const { gl } = this;
 
     let frame_x = Math.floor(frames.x) * this.uv_x;
     let frame_y = Math.floor(frames.y) * this.uv_y;
@@ -172,11 +190,9 @@ class SpriteRenderer {
     gl.uniform1i(this.uImageLoc, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
-    gl.enableVertexAttribArray(this.aPositionLoc);
     gl.vertexAttribPointer(this.aPositionLoc, 2, gl.FLOAT, false, 16, 0);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.data_buff);
-    gl.enableVertexAttribArray(this.aTexcoordLoc);
     gl.vertexAttribPointer(this.aTexcoordLoc, 2, gl.FLOAT, false, 16, 8);
 
     gl.uniform2f(this.uFrameLoc, frame_x, frame_y);

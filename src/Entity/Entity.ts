@@ -1,5 +1,62 @@
+import { LevelManager } from '../LevelManager';
+
+interface IEntityLocation {
+  x: number;
+  y: number;
+  row: number;
+  col: number;
+}
+
+export interface IEntityConfig {
+  name: string;
+  texture: any;
+  movement: {
+    speedX: number;
+    speedY: number;
+    speedFallY: number;
+  };
+}
+
 class Entity {
-  constructor(levelRef, initialLocation, config, initRenderer) {
+  name: string;
+  level: LevelManager;
+  row: number;
+  col: number;
+  x: number;
+  y: number;
+  tileRowOffset: number;
+  tileColOffset: number;
+  drawOffset: number;
+  drawWidthOffset: number;
+  drawHeightOffset: number;
+  tileCols: number;
+  textureWidth: number;
+  textureHeight: number;
+
+  isMoving: boolean;
+  isFalling: boolean;
+  direction: string;
+
+  speedXOffset: number;
+  speedYOffset: number;
+  speedFallOffset: number;
+  speedX: number;
+  speedY: number;
+  speedFall: number;
+
+  colOffsetInterval: ReturnType<typeof setInterval>;
+
+  textureSheet: any;
+  renderer: any;
+
+  loadingHandler: Promise<void>;
+
+  constructor(
+    levelRef: LevelManager,
+    initialLocation: IEntityLocation,
+    config: IEntityConfig,
+    initRenderer: any
+  ) {
     this.name = config.name;
     this.level = levelRef;
     /** Position in the game world */
@@ -18,13 +75,14 @@ class Entity {
     this.textureHeight = config.texture.height;
     /** Movement params */
     this.isMoving = false;
+    this.isFalling = false;
     this.direction = 'right';
     this.speedXOffset = config.movement.speedX;
     this.speedYOffset = config.movement.speedY;
     this.speedFallOffset = config.movement.speedFallY || 8;
-    this.speedX = Math.floor(levelRef.TILE_SIZE / this.speedXOffset);
-    this.speedY = Math.floor(levelRef.TILE_SIZE / this.speedYOffset);
-    this.speedFall = Math.floor(levelRef.TILE_SIZE / this.speedFallOffset);
+    this.speedX = Math.floor(levelRef.tileSize / this.speedXOffset);
+    this.speedY = Math.floor(levelRef.tileSize / this.speedYOffset);
+    this.speedFall = Math.floor(levelRef.tileSize / this.speedFallOffset);
     /** Used to handle player animations */
     this.startAnimation();
 
@@ -33,7 +91,7 @@ class Entity {
       resolve();
     });
 
-    this.renderer = initRenderer(config.texture, this.level.TILE_SIZE);
+    this.renderer = initRenderer(config.texture, this.level.tileSize);
 
     this.draw = this.draw.bind(this);
   }
@@ -50,15 +108,15 @@ class Entity {
     this.colOffsetInterval = null;
   }
 
-  resetPosition(tileSize) {
+  resetPosition(tileSize: number) {
     this.x = Math.floor(this.col * tileSize);
     this.y = Math.floor(this.row * tileSize);
     this.speedX = Math.floor(tileSize / this.speedXOffset);
     this.speedY = Math.floor(tileSize / this.speedYOffset);
   }
 
-  draw(drawFn, deltaTime) {
-    const tileSize = this.level.TILE_SIZE;
+  draw(drawFn: any, deltaTime: number) {
+    const tileSize = this.level.tileSize;
 
     this.isMoving && this.move(tileSize, deltaTime);
     this.isFalling && this.fall(tileSize);
@@ -76,6 +134,12 @@ class Entity {
       tileSize * this.drawHeightOffset
     );
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  move(_tileSize: number, _deltaTime: number) {}
+
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  fall(_tileSize: number) {}
 }
 
 export default Entity;

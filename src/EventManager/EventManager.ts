@@ -1,10 +1,25 @@
+import { Player } from '../Entity';
+import Game from '../Game';
+
+type IEvent = any;
+
+export type IEventsManagerConfig = (gameObjects: IGameObjects) => IEvent[];
+
+interface IGameObjects {
+  player: Player;
+  game: Game;
+}
+
 class EventManager {
-  constructor(events, gameObjects) {
+  events: IEvent[];
+  currentEvent: IEvent;
+
+  constructor(events: IEventsManagerConfig, gameObjects: IGameObjects) {
     this.events = events(gameObjects);
     this.currentEvent = null;
   }
 
-  checkEvent(player) {
+  checkEvent(player: Player) {
     const nextEvent = this.events.find(
       (event) =>
         player.row >= event.row[0] &&

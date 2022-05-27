@@ -1,25 +1,43 @@
-export class WebAudioPlayer {
-  // current: string;
-  // options: { music: { on: boolean }; sfx: { on: boolean } };
-  // available: { [key: string]: { isLoaded: boolean; data: HTMLAudioElement } };
+interface IWebAudioPlayerOptions {
+  music: { on: boolean };
+  sfx: { on: boolean };
+}
 
-  constructor(options) {
+interface IWebAudioPlayOptions {
+  volume?: number;
+  loop?: boolean;
+}
+
+export class WebAudioPlayer {
+  current: string;
+  options: IWebAudioPlayerOptions;
+  available: { [key: string]: { isLoaded: boolean; data: HTMLAudioElement } };
+
+  constructor(options: IWebAudioPlayerOptions) {
     this.options = options;
     this.current = null;
     this.available = {};
   }
 
-  load = async (name, src, options) => {
+  setOptions = (audio: HTMLAudioElement, options: IWebAudioPlayOptions) => {
+    (Object.keys(options) as Array<keyof typeof options>).forEach((key) => {
+      if (key === 'loop') {
+        audio[key] = options[key];
+      } else if (key === 'volume') {
+        audio[key] = options[key];
+      }
+    });
+  };
+
+  load = async (name: string, src: string, options: IWebAudioPlayOptions) => {
     if (this.available[name]) {
       return;
     }
 
-    const data = await new Promise((res) => {
+    const data = await new Promise<HTMLAudioElement>((res) => {
       const audio = new Audio(src);
 
-      for (const key in options) {
-        audio[key] = options[key];
-      }
+      this.setOptions(audio, options);
 
       audio.oncanplaythrough = () => {
         res(audio);
@@ -29,16 +47,14 @@ export class WebAudioPlayer {
     this.available[name] = { isLoaded: true, data: data };
   };
 
-  preload = (name, src, options) => {
+  preload = (name: string, src: string, options: IWebAudioPlayOptions) => {
     if (this.available[name]) {
       return;
     }
 
     const audio = new Audio(src);
 
-    for (const key in options) {
-      audio[key] = options[key];
-    }
+    this.setOptions(audio, options);
 
     this.available[name] = { isLoaded: false, data: null };
 
@@ -47,15 +63,15 @@ export class WebAudioPlayer {
     };
   };
 
-  fadeIn = async (audio, onended) => {
-    let fadeInInterval;
+  fadeIn = async (audio: HTMLAudioElement, onended: () => void) => {
+    let fadeInInterval: ReturnType<typeof setInterval>;
     const maxVolume = audio.volume;
 
     audio.volume = 0;
     audio.onended = onended;
     audio.play();
 
-    await new Promise((res) => {
+    await new Promise<void>((res) => {
       let volume = 0;
 
       fadeInInterval = setInterval(() => {
@@ -73,11 +89,11 @@ export class WebAudioPlayer {
     audio.volume = maxVolume;
   };
 
-  fadeOut = async (audio) => {
-    let fadeOutInterval;
+  fadeOut = async (audio: HTMLAudioElement) => {
+    let fadeOutInterval: ReturnType<typeof setInterval>;
     const maxVolume = audio.volume;
 
-    await new Promise((res) => {
+    await new Promise<void>((res) => {
       let volume = maxVolume;
 
       fadeOutInterval = setInterval(() => {
@@ -96,7 +112,7 @@ export class WebAudioPlayer {
     audio.volume = maxVolume;
   };
 
-  play = async (name, onended, skipFade) => {
+  play = async (name: string, onended?: () => void, skipFade?: boolean) => {
     if (name === this.current) {
       return;
     }
@@ -144,7 +160,7 @@ export class WebAudioPlayer {
     this.available[this.current].data.play();
   };
 
-  updateOptions = (newOptions) => {
+  updateOptions = (newOptions: IWebAudioPlayerOptions) => {
     this.options = newOptions;
 
     this.onOptionsUpdate();

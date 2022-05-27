@@ -1,14 +1,28 @@
+import { ITileTexture, ITileType } from './LevelTile';
+
+interface ILevelTextureManagerConfig {
+  spawnMarker: ITileType;
+  tileSheetCols: number;
+  spriteSize: number;
+  nonTextureTiles: ITileType[];
+}
+
 class LevelTextureManager {
-  constructor(config) {
+  spawnMarker: ITileType;
+  tileSheetCols: number;
+  spriteSize: number;
+  nonTextureTiles: ITileType[];
+
+  constructor(config: ILevelTextureManagerConfig) {
     this.spawnMarker = config.spawnMarker;
     this.tileSheetCols = config.tileSheetCols;
     this.spriteSize = config.spriteSize;
     this.nonTextureTiles = config.nonTextureTiles || [];
   }
 
-  getTexture(type) {
-    if (this.nonTextureTiles.includes(type)) {
-      return 0;
+  getTexture(type: ITileType): ITileTexture | -1 {
+    if (typeof type === 'string' || this.nonTextureTiles.includes(type)) {
+      return -1;
     }
 
     const adjustedType = type - 1;

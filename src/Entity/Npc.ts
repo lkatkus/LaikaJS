@@ -1,7 +1,15 @@
-import Entity from './Entity';
+import { LevelManager } from '../LevelManager';
+import Entity, { IEntityConfig } from './Entity';
 
-class Npc extends Entity {
-  constructor(level, config, initRenderer) {
+export interface INpcConfig extends IEntityConfig {
+  min: { row: number; col: number };
+  max: { row: number; col: number };
+}
+
+class Npc extends Entity {  
+  config: INpcConfig;
+
+  constructor(level: LevelManager, config: INpcConfig, initRenderer: any) {
     const spawnTile = level.getTile(config.min.row, config.min.col);
 
     if (!spawnTile) {
@@ -17,12 +25,12 @@ class Npc extends Entity {
     this.moveStart('right');
   }
 
-  moveStart(direction) {
+  moveStart(direction: any) {
     this.isMoving = true;
     this.direction = direction;
   }
 
-  moveEnd(direction) {
+  moveEnd(direction: any) {
     this.isMoving = false;
 
     switch (direction) {
@@ -40,15 +48,15 @@ class Npc extends Entity {
     }
   }
 
-  move(tileSize, deltaTime) {
+  move(tileSize: number, deltaTime: number) {
     const offsetSpeedX = this.speedX * deltaTime;
     const offsetSpeedY = this.speedY * deltaTime;
 
     this.row = Math.floor(this.y / tileSize);
     this.col = Math.floor(this.x / tileSize);
-    
+
     if (this.col >= this.config.max.col && this.direction === 'right') {
-      this.x = Math.floor(this.config.max.col * tileSize)
+      this.x = Math.floor(this.config.max.col * tileSize);
       this.moveEnd(this.direction);
       this.tileRowOffset = 2;
 
@@ -58,7 +66,7 @@ class Npc extends Entity {
     }
 
     if (this.col < this.config.min.col && this.direction === 'left') {
-      this.x = Math.floor(this.config.min.col * tileSize)
+      this.x = Math.floor(this.config.min.col * tileSize);
       this.moveEnd(this.direction);
       this.tileRowOffset = 3;
 

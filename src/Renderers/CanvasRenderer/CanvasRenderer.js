@@ -34,7 +34,9 @@ class CanvasRenderer {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  onAfterRender = () => {};
+  onAfterRender = () => {
+    // @todo
+  };
 
   renderLevel = (tilesToRender) => {
     this.bgRenderer.render(tilesToRender, this.worldSpaceMatrix);

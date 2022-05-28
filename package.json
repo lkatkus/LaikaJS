@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Simple JavaScript game engine for 2D games",
   "main": "./lib/bundle.min.js",
+  "types": "./lib/src/index.d.ts",
   "scripts": {
     "test": "eslint src",
     "build": "eslint src && webpack --mode production"

@@ -7,7 +7,7 @@ interface ITileTypeConfig {
   nonTexture: ITileType[];
 }
 
-interface ITile {
+export interface ITile {
   sx: number;
   sy: number;
   sWidth: number;

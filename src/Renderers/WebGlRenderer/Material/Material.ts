@@ -1,9 +1,14 @@
 class Material {
-  constructor(gl, vs, fs) {
+  gl: WebGLRenderingContext;
+  vsShader: string;
+  fsShader: string;
+  program: WebGLProgram;
+
+  constructor(gl: WebGLRenderingContext, vs: string, fs: string) {
     this.gl = gl;
 
-    let vsShader = this.getShader(vs, gl.VERTEX_SHADER);
-    let fsShader = this.getShader(fs, gl.FRAGMENT_SHADER);
+    const vsShader = this.getShader(vs, gl.VERTEX_SHADER);
+    const fsShader = this.getShader(fs, gl.FRAGMENT_SHADER);
 
     if (vsShader && fsShader) {
       this.program = gl.createProgram();
@@ -27,9 +32,9 @@ class Material {
     }
   }
 
-  getShader(script, type) {
-    let gl = this.gl;
-    var output = gl.createShader(type);
+  getShader(script: string, type: number) {
+    const gl = this.gl;
+    const output = gl.createShader(type);
     gl.shaderSource(output, script);
     gl.compileShader(output);
 
@@ -42,4 +47,4 @@ class Material {
   }
 }
 
-export default Material
+export default Material;

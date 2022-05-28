@@ -1,3 +1,4 @@
+import { ITile } from '../../../LevelManager';
 import { Point } from '../../utils';
 import { Material } from '../Material';
 
@@ -33,8 +34,37 @@ const TILES_FRAGMENT_SHADER = `
   }
 `;
 
+export interface ITilesRendererOptions {
+  size?: number;
+  tilesPerRow?: number;
+}
+
 class TilesRenderer {
-  constructor(gl, img_url, { size, tilesPerRow }) {
+  isLoaded: boolean;
+  gl: WebGLRenderingContext;
+  material: Material;
+  image: TexImageSource;
+  gl_tex: WebGLTexture;
+  data_buff: WebGLBuffer;
+
+  size: any;
+  uv_x: number;
+  uv_y: number;
+  tilesPerRow: number;
+
+  aPositionLoc: number;
+  aFrameLoc: number;
+  aDepthLoc: number;
+
+  uImageLoc: WebGLUniformLocation;
+  uWorldLoc: WebGLUniformLocation;
+  uScaledWorldLoc: WebGLUniformLocation;
+
+  constructor(
+    gl: WebGLRenderingContext,
+    image: TexImageSource,
+    { size, tilesPerRow }: ITilesRendererOptions
+  ) {
     this.gl = gl;
     this.isLoaded = false;
     this.material = new Material(
@@ -43,7 +73,7 @@ class TilesRenderer {
       TILES_FRAGMENT_SHADER
     );
     this.size = new Point(size, size);
-    this.image = img_url;
+    this.image = image;
     this.tilesPerRow = tilesPerRow;
 
     this.uv_x = this.size.x / this.image.width;
@@ -56,7 +86,7 @@ class TilesRenderer {
     return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
   }
 
-  combineGeoWithTexData(geoArr, texArr, zIndex) {
+  combineGeoWithTexData(geoArr: number[], texArr: number[], zIndex: number) {
     return [
       geoArr[0],
       geoArr[1],
@@ -152,18 +182,18 @@ class TilesRenderer {
     );
   }
 
-  render(tilesToRender, worldSpaceMatrix, scaledWorldSpace) {
+  render(tilesToRender: ITile[], worldSpaceMatrix: any, scaledWorldSpace: any) {
     const { gl, tilesPerRow } = this;
 
-    let dataBuffer = [];
+    const dataBufferSource = [];
 
-    for (let tile of tilesToRender) {
+    for (const tile of tilesToRender) {
       const frame = {
         x: tile.sx > 0 ? (tile.sx * tilesPerRow) / this.image.width : 0,
         y: tile.sy > 0 ? (tile.sy * tilesPerRow) / this.image.height : 0,
       };
 
-      dataBuffer.push(
+      dataBufferSource.push(
         ...this.combineGeoWithTexData(
           this.createRectArray(tile.dx, tile.dy, tile.dWidth, tile.dHeight),
           this.createRectArray(
@@ -177,7 +207,7 @@ class TilesRenderer {
       );
     }
 
-    dataBuffer = new Float32Array(dataBuffer);
+    const dataBuffer = new Float32Array(dataBufferSource);
 
     gl.useProgram(this.material.program);
 

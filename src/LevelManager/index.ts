@@ -1,1 +1,5 @@
-export { default as LevelManager, ILevelManagerConfig } from './LevelManager';
+export {
+  default as LevelManager,
+  ILevelManagerConfig,
+  ITile,
+} from './LevelManager';

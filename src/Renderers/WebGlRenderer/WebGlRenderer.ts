@@ -1,9 +1,34 @@
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
+import { ITilesRendererOptions } from './TilesRenderer/TilesRenderer';
+import { ITile } from '../../LevelManager';
+
+interface IParallaxConfig {
+  x: number;
+  y: number;
+}
+
+export interface IWebGlRendererOptions {
+  parallaxScaling?: IParallaxConfig;
+  clearColor?: [number, number, number, number];
+}
 
 class WebGlRenderer {
-  constructor(gl, options = {}) {
+  gl: WebGLRenderingContext;
+  screenWidth: number;
+  screenHeight: number;
+  parallaxScaling: IParallaxConfig;
+  wRatio: number;
+  offsetX: number;
+  offsetY: number;
+
+  worldSpaceMatrix: any;
+  scaleWorldSpaceMatrix: any;
+
+  bgRenderer: TilesRenderer;
+
+  constructor(gl: WebGLRenderingContext, options: IWebGlRendererOptions = {}) {
     const { drawingBufferWidth, drawingBufferHeight } = gl;
 
     this.gl = gl;
@@ -37,11 +62,25 @@ class WebGlRenderer {
     this.offsetY = 0;
   }
 
-  initBackgroundRenderer(texture, config) {
+  initBackgroundRenderer(
+    texture: TexImageSource,
+    config: ITilesRendererOptions
+  ) {
     this.bgRenderer = new TilesRenderer(this.gl, texture, config);
   }
 
-  initSpriteRenderer(texture, tileSize) {
+  initSpriteRenderer(
+    texture: {
+      source: TexImageSource;
+      height: number;
+      width: number;
+      tileCols: number;
+      drawOffset: number;
+      drawHeightOffset: number;
+      drawWidthOffset: number;
+    },
+    tileSize: number
+  ) {
     return new SpriteRenderer(this.gl, texture.source, {
       width: texture.width,
       height: texture.height,
@@ -64,10 +103,12 @@ class WebGlRenderer {
     const { gl } = this;
 
     gl.flush();
-    gl.endFrameEXP && gl.endFrameEXP();
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    gl.endFrameEXP && gl.endFrameEXP(); // Required for react native app using expo gl-view
   }
 
-  renderLevel(tilesToRender) {
+  renderLevel(tilesToRender: ITile[]) {
     this.bgRenderer.render(
       tilesToRender,
       this.worldSpaceMatrix,
@@ -75,7 +116,16 @@ class WebGlRenderer {
     );
   }
 
-  renderSprite(renderer, image, sx, sy, sWidth, sHeight, dx, dy) {
+  renderSprite(
+    renderer: SpriteRenderer,
+    image: TexImageSource,
+    sx: number,
+    sy: number,
+    sWidth: number,
+    sHeight: number,
+    dx: number,
+    dy: number
+  ) {
     const frames = {
       x: sx > 0 ? (sx * image.width) / sWidth / image.width : 0,
       y: sy > 0 ? (sy * image.height) / sHeight / image.height : 0,

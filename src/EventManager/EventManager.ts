@@ -3,19 +3,14 @@ import Game from '../Game';
 
 type IEvent = any;
 
-export type IEventsManagerConfig = (gameObjects: IGameObjects) => IEvent[];
-
-interface IGameObjects {
-  player: Player;
-  game: Game;
-}
+export type IEventsManagerConfig = (game: Game) => IEvent[];
 
 class EventManager {
   events: IEvent[];
   currentEvent: IEvent;
 
-  constructor(events: IEventsManagerConfig, gameObjects: IGameObjects) {
-    this.events = events(gameObjects);
+  constructor(events: IEventsManagerConfig, game: Game) {
+    this.events = events(game);
     this.currentEvent = null;
   }
 

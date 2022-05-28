@@ -1,16 +1,31 @@
 import { Point } from '../../utils';
 
+interface ITilesRendererOptions {
+  size?: number;
+  tilesPerRow?: number;
+}
+
 class TilesRenderer {
-  constructor(ctx, img_url, { size, tilesPerRow }) {
+  isLoaded: boolean;
+  ctx: CanvasRenderingContext2D;
+  image: HTMLImageElement;
+  size: any;
+  tilesPerRow: number;
+
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    image: HTMLImageElement,
+    { size, tilesPerRow }: ITilesRendererOptions
+  ) {
     this.ctx = ctx;
     this.isLoaded = false;
 
     this.size = new Point(size, size);
-    this.image = img_url;
+    this.image = image;
     this.tilesPerRow = tilesPerRow;
   }
 
-  render(tilesToRender, worldSpaceMatrix) {
+  render(tilesToRender: any[], worldSpaceMatrix: any) {
     const { ctx } = this;
 
     const offsetX = worldSpaceMatrix.matrix[6];
@@ -19,7 +34,7 @@ class TilesRenderer {
     ctx.save();
     ctx.translate(offsetX, offsetY);
 
-    for (let tile of tilesToRender) {
+    for (const tile of tilesToRender) {
       const { sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight } = tile;
 
       ctx.drawImage(

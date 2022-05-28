@@ -9,7 +9,7 @@
   "rules": {
     "sort-imports": ["error", { "ignoreDeclarationSort": true }],
     "@typescript-eslint/no-empty-interface": [
-      "error",
+      "warn",
       {
         "allowSingleExtends": true
       }

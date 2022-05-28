@@ -1,4 +1,4 @@
-interface IWebAudioPlayerOptions {
+export interface IWebAudioPlayerOptions {
   music: { on: boolean };
   sfx: { on: boolean };
 }

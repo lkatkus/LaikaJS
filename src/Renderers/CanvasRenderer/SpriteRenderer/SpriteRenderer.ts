@@ -1,7 +1,23 @@
 import { Point } from '../../utils';
 
+interface ISpriteRendererOptions {
+  width?: number;
+  height?: number;
+  renderWidth?: number;
+  renderHeight?: number;
+}
+
 class SpriteRenderer {
-  constructor(ctx, img_url, options = {}) {
+  isLoaded: boolean;
+  ctx: CanvasRenderingContext2D;
+  image: HTMLImageElement;
+  size: any;
+
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    image: HTMLImageElement,
+    options: ISpriteRendererOptions = {}
+  ) {
     this.ctx = ctx;
     this.isLoaded = false;
 
@@ -20,17 +36,31 @@ class SpriteRenderer {
       this.size.renderHeight = options.renderHeight;
     }
 
-    this.image = img_url;
+    this.image = image;
   }
 
-  updateTexture(newImage, tileSize) {
+  updateTexture(
+    newImage: {
+      src: HTMLImageElement;
+      height: number;
+      width: number;
+      tileCols: number;
+      drawHeightOffset: number;
+      drawWidthOffset: number;
+    },
+    tileSize: number
+  ) {
     this.image = newImage.src;
     this.size = new Point(newImage.width, newImage.height);
     this.size.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
     this.size.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
   }
 
-  render(position = { x: 0, y: 0 }, frames = { x: 0, y: 0 }, worldSpaceMatrix) {
+  render(
+    position = { x: 0, y: 0 },
+    frames = { x: 0, y: 0 },
+    worldSpaceMatrix: any
+  ) {
     const { ctx } = this;
 
     const frame = {

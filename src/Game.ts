@@ -3,10 +3,19 @@ import { EventManager, IEventsManagerConfig } from './EventManager';
 import { Camera } from './Camera';
 import { INpcConfig, IPlayerConfig, Npc, Player } from './Entity';
 import { EntinyManager } from './EntinyManager';
+import {
+  CanvasRenderer,
+  ICanvasRendererOptions,
+  IWebGlRendererOptions,
+  WebGlRenderer,
+} from './Renderers';
+import { WebAudioPlayer } from './AudioPlayers';
 
 export interface IGameConfig {
-  initRenderer: any;
-  initAudioPlayer: any;
+  initRenderer: (
+    config: IWebGlRendererOptions | ICanvasRendererOptions
+  ) => WebGlRenderer | CanvasRenderer;
+  initAudioPlayer: () => WebAudioPlayer;
   level: ILevelManagerConfig;
   player: IPlayerConfig;
   npc: INpcConfig[];
@@ -22,8 +31,8 @@ interface IGameHandlers {
 class Game {
   onDraw: (game: Game) => void;
 
-  renderer: any;
-  audioPlayer: any;
+  renderer: WebGlRenderer | CanvasRenderer;
+  audioPlayer: WebAudioPlayer;
   level: LevelManager;
   player: Player;
   camera: Camera;
@@ -80,10 +89,7 @@ class Game {
     }
 
     if (config.events) {
-      this.eventManager = new EventManager(config.events, {
-        game: this,
-        player: this.player,
-      });
+      this.eventManager = new EventManager(config.events, this);
     }
 
     onAfterInit && onAfterInit(this);

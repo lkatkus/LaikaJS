@@ -1,1 +1,1 @@
-export { WebAudioPlayer } from './WebPlayer';
+export { WebAudioPlayer, IWebAudioPlayerOptions } from './WebPlayer';

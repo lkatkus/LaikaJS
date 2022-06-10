@@ -1,6 +1,6 @@
 {
   "name": "laikajs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple JavaScript game engine for 2D games",
   "main": "./lib/bundle.min.js",
   "types": "./lib/src/index.d.ts",

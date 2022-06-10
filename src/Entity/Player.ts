@@ -1,4 +1,5 @@
-import Entity from './Entity';
+import { LevelManager } from '../LevelManager';
+import Entity, { IEntityConfig, IEntityDirection } from './Entity';
 
 import {
   MOVEMENT_DIRECTION,
@@ -6,18 +7,37 @@ import {
   MOVEMENT_KEY_CODES,
 } from './Player.constants';
 
+export interface IPlayerConfig extends IEntityConfig {}
+
+interface IPlayerOptions {
+  tileCols: number;
+  canFly: boolean;
+  speedXOffset: number;
+  speedYOffset: number;
+  speedX: number;
+  speedY: number;
+  textureWidth: number;
+  textureHeight: number;
+}
+
 class Player extends Entity {
-  constructor(level, config, initRenderer) {
+  anchorX: number;
+  anchorY: number;
+
+  canFly: boolean;
+  isOnLadder: boolean;
+
+  constructor(level: LevelManager, config: IPlayerConfig, initRenderer: any) {
     super(level, level.initialPlayerLocation, config, initRenderer);
     this.canFly = false;
 
-    this.updateAnchor(level.TILE_SIZE);
+    this.updateAnchor(level.tileSize);
   }
 
   setControls() {
     document.addEventListener('keydown', (event) => {
       if (MOVEMENT_KEY_CODES.includes(event.keyCode)) {
-        this.moveStart(MOVEMENT_KEYS[event.key]);
+        this.moveStart(MOVEMENT_KEYS[event.key as keyof typeof MOVEMENT_KEYS]);
       }
     });
 
@@ -27,7 +47,12 @@ class Player extends Entity {
       }
     });
 
-    const touchEvents = {};
+    const touchEvents: {
+      startX?: number;
+      startY?: number;
+      moveX?: number;
+      moveY?: number;
+    } = {};
 
     document.addEventListener('touchstart', (event) => {
       touchEvents.startX = event.targetTouches[0].screenX;
@@ -37,8 +62,8 @@ class Player extends Entity {
     document.addEventListener('touchmove', (event) => {
       touchEvents.moveX = event.targetTouches[0].screenX;
       touchEvents.moveY = event.targetTouches[0].screenY;
-      let changeX = Math.abs(touchEvents.startX - touchEvents.moveX);
-      let changeY = Math.abs(touchEvents.startY - touchEvents.moveY);
+      const changeX = Math.abs(touchEvents.startX - touchEvents.moveX);
+      const changeY = Math.abs(touchEvents.startY - touchEvents.moveY);
 
       if (changeX >= changeY && changeX > 30) {
         if (touchEvents.startX > touchEvents.moveX) {
@@ -71,21 +96,7 @@ class Player extends Entity {
     });
 
     document.addEventListener('touchend', () => {
-      if (touchEvents.startX > touchEvents.moveX) {
-        this.moveEnd(MOVEMENT_DIRECTION.left);
-      }
-
-      if (touchEvents.startX < touchEvents.moveX) {
-        this.moveEnd(MOVEMENT_DIRECTION.right);
-      }
-
-      if (touchEvents.startY > touchEvents.moveY) {
-        this.moveEnd(MOVEMENT_DIRECTION.up);
-      }
-
-      if (touchEvents.startY < touchEvents.moveY) {
-        this.moveEnd(MOVEMENT_DIRECTION.down);
-      }
+      this.moveEnd();
     });
   }
 
@@ -97,21 +108,25 @@ class Player extends Entity {
     // TODO
   }
 
-  levelUp(newTexture, config) {
-    this.renderer.updateTexture(newTexture, this.level.TILE_SIZE);
+  levelUp(newTexture: any, config: IPlayerOptions) {
+    this.renderer.updateTexture(newTexture, this.level.tileSize);
 
-    for (let prop in config) {
-      this[prop] = config[prop];
-    }
+    (Object.keys(config) as Array<keyof typeof config>).forEach((key) => {
+      if (key === 'canFly') {
+        this[key] = config[key];
+      } else {
+        this[key] = config[key];
+      }
+    });
   }
 
-  updateAnchor(tileSize) {
+  updateAnchor(tileSize: number) {
     // @TODO make configurable, because of different player sprite sizes
     this.anchorX = this.x + tileSize;
     this.anchorY = this.y + tileSize;
   }
 
-  checkFalling(tileSize) {
+  checkFalling(tileSize: number) {
     const anchorCol = Math.floor(this.anchorX / tileSize);
     const tileBelow = this.level.getTile(this.row + 1, anchorCol);
 
@@ -124,15 +139,11 @@ class Player extends Entity {
     }
   }
 
-  fall(tileSize) {
+  fall(tileSize: number) {
     if (!this.canFly) {
-      let nextRow;
-      let nextCol;
-      let nextTile;
-
-      nextRow = Math.floor((this.y + tileSize + 10) / tileSize);
-      nextCol = Math.floor(this.anchorX / tileSize);
-      nextTile = this.level.getTile(nextRow, nextCol);
+      const nextRow = Math.floor((this.y + tileSize + 10) / tileSize);
+      const nextCol = Math.floor(this.anchorX / tileSize);
+      const nextTile = this.level.getTile(nextRow, nextCol);
 
       if (nextTile === null) {
         return;
@@ -156,10 +167,9 @@ class Player extends Entity {
     }
   }
 
-  move(tileSize, deltaTime) {
+  move(tileSize: number, deltaTime: number) {
     let nextRow;
     let nextCol;
-    let nextTile;
 
     const offsetSpeedX = this.speedX * deltaTime;
     const offsetSpeedY = this.speedY * deltaTime;
@@ -185,7 +195,7 @@ class Player extends Entity {
         break;
     }
 
-    nextTile = this.level.getTile(nextRow, nextCol);
+    const nextTile = this.level.getTile(nextRow, nextCol);
 
     if (nextTile === null) {
       return;
@@ -260,7 +270,7 @@ class Player extends Entity {
     !this.canFly && this.checkFalling(tileSize);
   }
 
-  moveStart(direction) {
+  moveStart(direction: IEntityDirection) {
     this.isMoving = true;
     this.direction = direction;
   }

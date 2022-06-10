@@ -1,23 +1,37 @@
+import { Player } from '../Entity';
+import { LevelManager } from '../LevelManager';
+
 class Camera {
-  constructor(level, player) {
+  level: LevelManager;
+  player: Player;
+
+  offsetX: number;
+  offsetY: number;
+
+  constructor(level: LevelManager, player: Player) {
     this.level = level;
     this.player = player;
   }
 
-  setInitialCamera(screenWidth, screenHeight) {
-    this.offsetX = -this.level.spawnX + screenWidth / 2 - this.level.TILE_SIZE;
+  setInitialCamera(screenWidth: number, screenHeight: number) {
+    this.offsetX = -this.level.spawnX + screenWidth / 2 - this.level.tileSize;
     this.offsetY = -(this.level.spawnY - (screenHeight / 10) * 6);
   }
 
-  resetCameraOffset(screenWidth, screenHeight) {
+  resetCameraOffset(screenWidth: number, screenHeight: number) {
     this.offsetX = -this.player.x + screenWidth / 2;
     this.offsetY = -(this.player.y - screenHeight / 2);
   }
 
-  updateCameraOffset(screenWidth, screenHeight, deltaTime) {
+  updateCameraOffset(
+    screenWidth: number,
+    screenHeight: number,
+    deltaTime: number
+  ) {
     const offsetSpeedX = this.player.speedX * deltaTime;
     const offsetSpeedY = this.player.speedY * deltaTime;
 
+    // @TODO make scroll boundaries configurable
     if (this.player.anchorX + this.offsetX > (screenWidth / 10) * 8) {
       this.offsetX = this.offsetX - offsetSpeedX;
     } else if (this.player.anchorX + this.offsetX < (screenWidth / 10) * 2) {

@@ -1,11 +1,51 @@
-import { LevelManager } from './LevelManager';
-import { EventManager } from './EventManager';
+import { ILevelManagerConfig, LevelManager } from './LevelManager';
+import { EventManager, IEventsManagerConfig } from './EventManager';
 import { Camera } from './Camera';
-import { Npc, Player } from './Entity';
+import { INpcConfig, IPlayerConfig, Npc, Player } from './Entity';
 import { EntinyManager } from './EntinyManager';
+import {
+  CanvasRenderer,
+  ICanvasRendererOptions,
+  IWebGlRendererOptions,
+  WebGlRenderer,
+} from './Renderers';
+import { WebAudioPlayer } from './AudioPlayers';
 
-class Game {
-  constructor(config, { onAfterInit, onLoadGame, onDraw }) {
+export interface IGameConfig {
+  initRenderer: (
+    config: IWebGlRendererOptions | ICanvasRendererOptions
+  ) => WebGlRenderer | CanvasRenderer;
+  initAudioPlayer?: () => WebAudioPlayer;
+  level: ILevelManagerConfig;
+  player: IPlayerConfig;
+  npc?: INpcConfig[];
+  events?: IEventsManagerConfig;
+}
+
+interface IGameHandlers {
+  onAfterInit: (game: Game) => void;
+  onLoadGame: (game: Game) => void;
+  onDraw: (game: Game) => void;
+}
+
+export class Game {
+  onDraw: (game: Game) => void;
+
+  renderer: WebGlRenderer | CanvasRenderer;
+  audioPlayer: WebAudioPlayer;
+  level: LevelManager;
+  player: Player;
+  camera: Camera;
+  npcManager: EntinyManager;
+  eventManager: EventManager;
+
+  previousTime: number;
+  drawInterval: ReturnType<typeof window.requestAnimationFrame>;
+
+  constructor(
+    config: IGameConfig,
+    { onAfterInit, onLoadGame, onDraw }: IGameHandlers
+  ) {
     const loadingHandlers = [];
 
     this.onDraw = onDraw;
@@ -14,7 +54,7 @@ class Game {
     });
 
     if (config.initAudioPlayer) {
-      this.audioPlayer = config.initAudioPlayer(config.options.audio);
+      this.audioPlayer = config.initAudioPlayer();
     }
 
     this.mainDraw = this.mainDraw.bind(this);
@@ -49,10 +89,7 @@ class Game {
     }
 
     if (config.events) {
-      this.eventManager = new EventManager(config.events, {
-        game: this,
-        player: this.player,
-      });
+      this.eventManager = new EventManager(config.events, this);
     }
 
     onAfterInit && onAfterInit(this);
@@ -60,18 +97,18 @@ class Game {
     Promise.all(loadingHandlers).then(() => onLoadGame(this));
   }
 
-  handleResize(screenWidth, screenHeight) {
+  handleResize(screenWidth: number, screenHeight: number) {
     window.cancelAnimationFrame(this.drawInterval);
 
     this.level.resetTileSize(screenWidth, screenHeight);
-    this.npcManager && this.npcManager.resetPosition(this.level.TILE_SIZE);
-    this.player.resetPosition(this.level.TILE_SIZE);
+    this.npcManager && this.npcManager.resetPosition(this.level.tileSize);
+    this.player.resetPosition(this.level.tileSize);
     this.camera.resetCameraOffset(screenWidth, screenHeight);
 
     window.requestAnimationFrame(this.mainDraw);
   }
 
-  mainDraw(currentTime) {
+  mainDraw(currentTime: number) {
     const deltaTime = (currentTime - this.previousTime) / 1000.0;
     this.previousTime = currentTime;
 
@@ -111,13 +148,9 @@ class Game {
   }
 
   startGame() {
-    window.requestAnimationFrame(
-      function (currentTime) {
-        this.previousTime = currentTime;
-        this.mainDraw(currentTime);
-      }.bind(this)
-    );
+    window.requestAnimationFrame((currentTime) => {
+      this.previousTime = currentTime;
+      this.mainDraw(currentTime);
+    });
   }
 }
-
-export default Game;

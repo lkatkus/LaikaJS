@@ -2,7 +2,7 @@ const path = require('path');
 
 module.exports = {
   mode: 'production',
-  entry: './src/index.js',
+  entry: './src/index',
   output: {
     path: path.join(__dirname, '/lib'),
     filename: 'bundle.min.js',
@@ -11,13 +11,13 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.js?$/,
-        exclude: /(node_modules)/,
-        use: 'babel-loader',
+        test: /\.(js|ts)$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
       },
     ],
   },
   resolve: {
-    extensions: ['.js'],
+    extensions: ['.ts', '.js'],
   },
 };

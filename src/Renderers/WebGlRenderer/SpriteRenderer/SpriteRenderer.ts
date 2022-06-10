@@ -29,8 +29,39 @@ const FRAGMENT_SHADER = `
   }
 `;
 
+interface ISpriteRendererOptions {
+  width?: number;
+  height?: number;
+  renderWidth?: number;
+  renderHeight?: number;
+}
+
 class SpriteRenderer {
-  constructor(gl, img_url, options = {}) {
+  isLoaded: boolean;
+  gl: WebGLRenderingContext;
+  material: Material;
+  gl_tex: WebGLTexture;
+  data_buff: WebGLBuffer;
+  image: TexImageSource;
+
+  aPositionLoc: number;
+  aTexcoordLoc: number;
+  uImageLoc: WebGLUniformLocation;
+  uWorldLoc: WebGLUniformLocation;
+  uObjectLoc: WebGLUniformLocation;
+  uFrameLoc: WebGLUniformLocation;
+
+  size: Point;
+  uv_x: number;
+  uv_y: number;
+  renderWidth: number;
+  renderHeight: number;
+
+  constructor(
+    gl: WebGLRenderingContext,
+    image: TexImageSource,
+    options: ISpriteRendererOptions = {}
+  ) {
     this.gl = gl;
     this.isLoaded = false;
     this.material = new Material(gl, VERTEX_SHADER, FRAGMENT_SHADER);
@@ -44,22 +75,22 @@ class SpriteRenderer {
       this.size.y = options.height * 1;
     }
     if ('renderWidth' in options) {
-      this.size.renderWidth = options.renderWidth;
+      this.renderWidth = options.renderWidth;
     }
     if ('renderHeight' in options) {
-      this.size.renderHeight = options.renderHeight;
+      this.renderHeight = options.renderHeight;
     }
 
-    this.image = img_url;
+    this.image = image;
 
     this.setup();
   }
 
-  createRectArray(x = 0, y = 0, w = 1, h = 1) {
+  createRectArray(x = 0, y = 0, w = 1, h = 1): number[] {
     return [x, y, x + w, y, x, y + h, x, y + h, x + w, y, x + w, y + h];
   }
 
-  combineGeoWithTexData(geoArr, texArr) {
+  combineGeoWithTexData(geoArr: number[], texArr: number[]) {
     return [
       geoArr[0],
       geoArr[1],
@@ -132,17 +163,17 @@ class SpriteRenderer {
     this.uv_x = this.size.x / this.image.width;
     this.uv_y = this.size.y / this.image.height;
 
-    let dataBuffData = this.combineGeoWithTexData(
-      this.createRectArray(
-        0,
-        0,
-        this.size.renderWidth || this.size.x,
-        this.size.renderHeight || this.size.y
-      ),
-      this.createRectArray(0, 0, this.uv_x, this.uv_y)
+    const dataBuffData = new Float32Array(
+      this.combineGeoWithTexData(
+        this.createRectArray(
+          0,
+          0,
+          this.renderWidth || this.size.x,
+          this.renderHeight || this.size.y
+        ),
+        this.createRectArray(0, 0, this.uv_x, this.uv_y)
+      )
     );
-
-    dataBuffData = new Float32Array(dataBuffData);
 
     this.data_buff = gl.createBuffer();
 
@@ -167,21 +198,35 @@ class SpriteRenderer {
     this.uFrameLoc = gl.getUniformLocation(this.material.program, 'u_frame');
   }
 
-  updateTexture(newImage, tileSize) {
+  updateTexture(
+    newImage: {
+      src: TexImageSource;
+      height: number;
+      width: number;
+      tileCols: number;
+      drawHeightOffset: number;
+      drawWidthOffset: number;
+    },
+    tileSize: number
+  ) {
     this.image = newImage.src;
     this.size = new Point(newImage.width, newImage.height);
-    this.size.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
-    this.size.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
+    this.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
+    this.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
 
     this.setup();
   }
 
-  render(position = { x: 0, y: 0 }, frames = { x: 0, y: 0 }, worldSpaceMatrix) {
+  render(
+    position = { x: 0, y: 0 },
+    frames = { x: 0, y: 0 },
+    worldSpaceMatrix: M3x3
+  ) {
     const { gl } = this;
 
-    let frame_x = Math.floor(frames.x) * this.uv_x;
-    let frame_y = Math.floor(frames.y) * this.uv_y;
-    let oMat = new M3x3().transition(position.x, position.y);
+    const frame_x = Math.floor(frames.x) * this.uv_x;
+    const frame_y = Math.floor(frames.y) * this.uv_y;
+    const oMat = new M3x3().transition(position.x, position.y);
 
     gl.useProgram(this.material.program);
 

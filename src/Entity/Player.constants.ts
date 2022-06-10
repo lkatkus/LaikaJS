@@ -1,9 +1,9 @@
-export const MOVEMENT_DIRECTION = {
-  left: 'left',
-  right: 'right',
-  up: 'up',
-  down: 'down'
-};
+export enum MOVEMENT_DIRECTION {
+  left = 'left',
+  right = 'right',
+  up = 'up',
+  down = 'down',
+}
 
 export const MOVEMENT_KEY_CODES = [37, 38, 39, 40];
 

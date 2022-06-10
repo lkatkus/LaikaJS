@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Simple JavaScript game engine for 2D games",
   "main": "./lib/bundle.min.js",
+  "types": "./lib/src/index.d.ts",
   "scripts": {
     "test": "eslint src",
     "build": "eslint src && webpack --mode production"
@@ -24,15 +25,15 @@
   "author": "Laimonas Katkus",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.18.0",
-    "@babel/eslint-parser": "^7.17.0",
-    "@babel/preset-env": "^7.18.0",
-    "babel-loader": "^8.2.5",
-    "babel-preset-es2015": "^6.24.1",
     "eslint": "^8.16.0",
     "pre-commit": "^1.2.2",
+    "ts-loader": "^9.3.0",
+    "typescript": "^4.7.2",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0"
+  }
 }

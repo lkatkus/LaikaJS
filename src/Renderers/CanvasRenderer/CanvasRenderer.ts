@@ -1,9 +1,24 @@
+import { ITile } from '../../LevelManager';
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
 
+export interface ICanvasRendererOptions {}
+
 class CanvasRenderer {
-  constructor(ctx) {
+  ctx: CanvasRenderingContext2D;
+  screenWidth: number;
+  screenHeight: number;
+  wRatio: number;
+  offsetX: number;
+  offsetY: number;
+  worldSpaceMatrix: M3x3;
+  bgRenderer: TilesRenderer;
+
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    _options: ICanvasRendererOptions = {}
+  ) {
     this.ctx = ctx;
     this.screenWidth = ctx.canvas.width;
     this.screenHeight = ctx.canvas.height;
@@ -15,11 +30,28 @@ class CanvasRenderer {
     this.offsetY = 0;
   }
 
-  initBackgroundRenderer = (texture, config) => {
+  initBackgroundRenderer = (
+    texture: HTMLImageElement,
+    config: {
+      size: number;
+      tilesPerRow: number;
+    }
+  ) => {
     this.bgRenderer = new TilesRenderer(this.ctx, texture, config);
   };
 
-  initSpriteRenderer = (texture, tileSize) => {
+  initSpriteRenderer = (
+    texture: {
+      source: HTMLImageElement;
+      height: number;
+      width: number;
+      tileCols: number;
+      drawOffset: number;
+      drawHeightOffset: number;
+      drawWidthOffset: number;
+    },
+    tileSize: number
+  ) => {
     return new SpriteRenderer(this.ctx, texture.source, {
       width: texture.width,
       height: texture.height,
@@ -34,13 +66,24 @@ class CanvasRenderer {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   };
 
-  onAfterRender = () => {};
+  onAfterRender = () => {
+    // @todo
+  };
 
-  renderLevel = (tilesToRender) => {
+  renderLevel = (tilesToRender: ITile[]) => {
     this.bgRenderer.render(tilesToRender, this.worldSpaceMatrix);
   };
 
-  renderSprite = (renderer, image, sx, sy, sWidth, sHeight, dx, dy) => {
+  renderSprite = (
+    renderer: SpriteRenderer,
+    image: HTMLImageElement,
+    sx: number,
+    sy: number,
+    sWidth: number,
+    sHeight: number,
+    dx: number,
+    dy: number
+  ) => {
     const frames = {
       x: sx > 0 ? (sx * image.width) / sWidth / image.width : 0,
       y: sy > 0 ? (sy * image.height) / sHeight / image.height : 0,

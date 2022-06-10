@@ -1,4 +1,4 @@
-import { Point } from '../../utils';
+import { M3x3, Point } from '../../utils';
 
 interface ISpriteRendererOptions {
   width?: number;
@@ -11,7 +11,9 @@ class SpriteRenderer {
   isLoaded: boolean;
   ctx: CanvasRenderingContext2D;
   image: HTMLImageElement;
-  size: any;
+  size: Point;
+  renderWidth: number;
+  renderHeight: number;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -30,10 +32,10 @@ class SpriteRenderer {
       this.size.y = options.height * 1;
     }
     if ('renderWidth' in options) {
-      this.size.renderWidth = options.renderWidth;
+      this.renderWidth = options.renderWidth;
     }
     if ('renderHeight' in options) {
-      this.size.renderHeight = options.renderHeight;
+      this.renderHeight = options.renderHeight;
     }
 
     this.image = image;
@@ -52,14 +54,14 @@ class SpriteRenderer {
   ) {
     this.image = newImage.src;
     this.size = new Point(newImage.width, newImage.height);
-    this.size.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
-    this.size.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
+    this.renderWidth = tileSize * (newImage.drawWidthOffset || 1);
+    this.renderHeight = tileSize * (newImage.drawHeightOffset || 1);
   }
 
   render(
     position = { x: 0, y: 0 },
     frames = { x: 0, y: 0 },
-    worldSpaceMatrix: any
+    worldSpaceMatrix: M3x3
   ) {
     const { ctx } = this;
 
@@ -82,8 +84,8 @@ class SpriteRenderer {
       this.size.y,
       position.x,
       position.y,
-      this.size.renderWidth,
-      this.size.renderHeight
+      this.renderWidth,
+      this.renderHeight
     );
 
     ctx.restore();

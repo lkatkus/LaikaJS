@@ -1,7 +1,13 @@
 import { Player } from '../Entity';
-import Game from '../Game';
+import { Game } from '../Game';
 
-type IEvent = any;
+export type IEvent = {
+  id: string;
+  row: [number, number];
+  col: [number, number];
+  eventHandler: (player: Player) => void;
+  onLeave?: () => void;
+};
 
 export type IEventsManagerConfig = (game: Game) => IEvent[];
 
@@ -30,7 +36,7 @@ class EventManager {
       if (nextEvent.id !== this.currentEvent.id) {
         this.currentEvent.onLeave && this.currentEvent.onLeave();
         this.currentEvent = nextEvent;
-        this.currentEvent.eventHandler();
+        this.currentEvent.eventHandler(player);
       }
     } else if (this.currentEvent && !nextEvent) {
       this.currentEvent.onLeave && this.currentEvent.onLeave();

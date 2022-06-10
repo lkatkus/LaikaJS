@@ -13,9 +13,11 @@ export interface IEntityConfig {
   movement: {
     speedX: number;
     speedY: number;
-    speedFallY: number;
+    speedFallY?: number;
   };
 }
+
+export type IEntityDirection = 'left' | 'right' | 'up' | 'down';
 
 class Entity {
   name: string;
@@ -35,7 +37,7 @@ class Entity {
 
   isMoving: boolean;
   isFalling: boolean;
-  direction: string;
+  direction: IEntityDirection;
 
   speedXOffset: number;
   speedYOffset: number;

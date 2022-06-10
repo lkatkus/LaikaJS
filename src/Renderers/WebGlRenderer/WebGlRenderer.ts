@@ -1,8 +1,8 @@
+import { ITile } from '../../LevelManager';
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
 import { ITilesRendererOptions } from './TilesRenderer/TilesRenderer';
-import { ITile } from '../../LevelManager';
 
 interface IParallaxConfig {
   x: number;
@@ -22,10 +22,8 @@ class WebGlRenderer {
   wRatio: number;
   offsetX: number;
   offsetY: number;
-
-  worldSpaceMatrix: any;
-  scaleWorldSpaceMatrix: any;
-
+  worldSpaceMatrix: M3x3;
+  scaleWorldSpaceMatrix: M3x3;
   bgRenderer: TilesRenderer;
 
   constructor(gl: WebGLRenderingContext, options: IWebGlRendererOptions = {}) {

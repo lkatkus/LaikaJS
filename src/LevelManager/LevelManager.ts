@@ -1,3 +1,4 @@
+import { CanvasRenderer, WebGlRenderer } from '../Renderers';
 import LevelTextureManager from './LevelTextureManager';
 import { ITileType, LevelTile } from './LevelTile';
 
@@ -40,7 +41,7 @@ export interface ILevelManagerConfig {
   stageLayout: ITileType[][];
   backgroundLayout: ITileType[][];
   foregroundLayout: ITileType[][];
-  parallaxScaling: IParallaxConfig;
+  parallaxScaling?: IParallaxConfig;
 }
 
 interface ILayoutParams {
@@ -90,12 +91,15 @@ class LevelManager {
 
   tileTypes: ITileTypeConfig;
   parallaxScaling: IParallaxConfig;
-  textureSheet: any;
+  textureSheet: TexImageSource;
   levelTextureManager: LevelTextureManager;
 
   loadingHandler: Promise<void>;
 
-  constructor(renderer: any, config: ILevelManagerConfig) {
+  constructor(
+    renderer: WebGlRenderer | CanvasRenderer,
+    config: ILevelManagerConfig
+  ) {
     this.setParams(config);
 
     renderer.initBackgroundRenderer(config.tileSheet.src, {

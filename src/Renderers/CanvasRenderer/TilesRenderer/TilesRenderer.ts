@@ -1,4 +1,5 @@
-import { Point } from '../../utils';
+import { ITile } from '../../../LevelManager';
+import { M3x3, Point } from '../../utils';
 
 interface ITilesRendererOptions {
   size?: number;
@@ -9,7 +10,7 @@ class TilesRenderer {
   isLoaded: boolean;
   ctx: CanvasRenderingContext2D;
   image: HTMLImageElement;
-  size: any;
+  size: Point;
   tilesPerRow: number;
 
   constructor(
@@ -25,7 +26,7 @@ class TilesRenderer {
     this.tilesPerRow = tilesPerRow;
   }
 
-  render(tilesToRender: any[], worldSpaceMatrix: any) {
+  render(tilesToRender: ITile[], worldSpaceMatrix: M3x3) {
     const { ctx } = this;
 
     const offsetX = worldSpaceMatrix.matrix[6];

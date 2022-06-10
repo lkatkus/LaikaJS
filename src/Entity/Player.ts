@@ -1,5 +1,5 @@
 import { LevelManager } from '../LevelManager';
-import Entity, { IEntityConfig } from './Entity';
+import Entity, { IEntityConfig, IEntityDirection } from './Entity';
 
 import {
   MOVEMENT_DIRECTION,
@@ -270,7 +270,7 @@ class Player extends Entity {
     !this.canFly && this.checkFalling(tileSize);
   }
 
-  moveStart(direction: any) {
+  moveStart(direction: IEntityDirection) {
     this.isMoving = true;
     this.direction = direction;
   }

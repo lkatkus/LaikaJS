@@ -1,5 +1,5 @@
 import { ITile } from '../../../LevelManager';
-import { Point } from '../../utils';
+import { M3x3, Point } from '../../utils';
 import { Material } from '../Material';
 
 const TILES_VERTEX_SHADER = `
@@ -46,16 +46,13 @@ class TilesRenderer {
   image: TexImageSource;
   gl_tex: WebGLTexture;
   data_buff: WebGLBuffer;
-
-  size: any;
+  size: Point;
   uv_x: number;
   uv_y: number;
   tilesPerRow: number;
-
   aPositionLoc: number;
   aFrameLoc: number;
   aDepthLoc: number;
-
   uImageLoc: WebGLUniformLocation;
   uWorldLoc: WebGLUniformLocation;
   uScaledWorldLoc: WebGLUniformLocation;
@@ -182,7 +179,11 @@ class TilesRenderer {
     );
   }
 
-  render(tilesToRender: ITile[], worldSpaceMatrix: any, scaledWorldSpace: any) {
+  render(
+    tilesToRender: ITile[],
+    worldSpaceMatrix: M3x3,
+    scaledWorldSpace: M3x3
+  ) {
     const { gl, tilesPerRow } = this;
 
     const dataBufferSource = [];

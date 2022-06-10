@@ -1,12 +1,12 @@
 import { LevelManager } from '../LevelManager';
-import Entity, { IEntityConfig } from './Entity';
+import Entity, { IEntityConfig, IEntityDirection } from './Entity';
 
 export interface INpcConfig extends IEntityConfig {
   min: { row: number; col: number };
   max: { row: number; col: number };
 }
 
-class Npc extends Entity {  
+class Npc extends Entity {
   config: INpcConfig;
 
   constructor(level: LevelManager, config: INpcConfig, initRenderer: any) {
@@ -25,12 +25,12 @@ class Npc extends Entity {
     this.moveStart('right');
   }
 
-  moveStart(direction: any) {
+  moveStart(direction: IEntityDirection) {
     this.isMoving = true;
     this.direction = direction;
   }
 
-  moveEnd(direction: any) {
+  moveEnd(direction: IEntityDirection) {
     this.isMoving = false;
 
     switch (direction) {

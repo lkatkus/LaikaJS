@@ -15,11 +15,11 @@ export interface IGameConfig {
   initRenderer: (
     config: IWebGlRendererOptions | ICanvasRendererOptions
   ) => WebGlRenderer | CanvasRenderer;
-  initAudioPlayer: () => WebAudioPlayer;
+  initAudioPlayer?: () => WebAudioPlayer;
   level: ILevelManagerConfig;
   player: IPlayerConfig;
-  npc: INpcConfig[];
-  events: IEventsManagerConfig;
+  npc?: INpcConfig[];
+  events?: IEventsManagerConfig;
 }
 
 interface IGameHandlers {
@@ -28,7 +28,7 @@ interface IGameHandlers {
   onDraw: (game: Game) => void;
 }
 
-class Game {
+export class Game {
   onDraw: (game: Game) => void;
 
   renderer: WebGlRenderer | CanvasRenderer;
@@ -154,5 +154,3 @@ class Game {
     });
   }
 }
-
-export default Game;

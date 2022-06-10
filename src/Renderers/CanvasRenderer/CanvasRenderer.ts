@@ -1,3 +1,4 @@
+import { ITile } from '../../LevelManager';
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
@@ -11,9 +12,8 @@ class CanvasRenderer {
   wRatio: number;
   offsetX: number;
   offsetY: number;
-  worldSpaceMatrix: any;
-
-  bgRenderer: any;
+  worldSpaceMatrix: M3x3;
+  bgRenderer: TilesRenderer;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -70,12 +70,12 @@ class CanvasRenderer {
     // @todo
   };
 
-  renderLevel = (tilesToRender: any[]) => {
+  renderLevel = (tilesToRender: ITile[]) => {
     this.bgRenderer.render(tilesToRender, this.worldSpaceMatrix);
   };
 
   renderSprite = (
-    renderer: any,
+    renderer: SpriteRenderer,
     image: HTMLImageElement,
     sx: number,
     sy: number,

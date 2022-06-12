@@ -1,1 +1,2 @@
-export { WebAudioPlayer, IWebAudioPlayerOptions } from './WebPlayer';
+export { AudioPlayer } from './AudioPlayer';
+export { IAudioElement, IAudioPlayerOptions } from './AudioPlayer.model';

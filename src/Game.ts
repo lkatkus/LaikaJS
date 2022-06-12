@@ -23,9 +23,9 @@ export interface IGameConfig {
 }
 
 interface IGameHandlers {
-  onAfterInit: (game: Game) => void;
   onLoadGame: (game: Game) => void;
-  onDraw: (game: Game) => void;
+  onDraw?: (game: Game) => void;
+  onAfterInit?: (game: Game) => void;
 }
 
 export class Game {

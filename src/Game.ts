@@ -9,13 +9,13 @@ import {
   IWebGlRendererOptions,
   WebGlRenderer,
 } from './Renderers';
-import { WebAudioPlayer } from './AudioPlayers';
+import { AudioPlayer } from './AudioPlayers';
 
 export interface IGameConfig {
   initRenderer: (
     config: IWebGlRendererOptions | ICanvasRendererOptions
   ) => WebGlRenderer | CanvasRenderer;
-  initAudioPlayer?: () => WebAudioPlayer;
+  initAudioPlayer?: () => AudioPlayer;
   level: ILevelManagerConfig;
   player: IPlayerConfig;
   npc?: INpcConfig[];
@@ -32,7 +32,7 @@ export class Game {
   onDraw: (game: Game) => void;
 
   renderer: WebGlRenderer | CanvasRenderer;
-  audioPlayer: WebAudioPlayer;
+  audioPlayer: AudioPlayer;
   level: LevelManager;
   player: Player;
   camera: Camera;

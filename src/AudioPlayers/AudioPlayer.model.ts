@@ -12,13 +12,13 @@ interface IAudioElementIsLoading {
   data: null;
 }
 
-interface IAudioElementLoaded<T> {
+interface IAudioElementLoaded {
   isLoaded: true;
-  data: T;
+  data: IAudioElement;
 }
 
-export interface IAudioElements<T> {
-  [key: string]: IAudioElementIsLoading | IAudioElementLoaded<T>;
+export interface IAudioElements {
+  [key: string]: IAudioElementIsLoading | IAudioElementLoaded;
 }
 
 export interface IAudioElementOptions {
@@ -31,10 +31,10 @@ export interface IAudioPlayerOptions {
   sfx: { on: boolean };
 }
 
-export interface IAudioPlayer<T extends IAudioElement> {
+export interface IAudioPlayer {
   current: string | null;
   options: IAudioPlayerOptions;
-  available: IAudioElements<T>;
+  available: IAudioElements;
 
   // Options handlers
   updateOptions: (newOptions: IAudioPlayerOptions) => void;
@@ -47,7 +47,10 @@ export interface IAudioPlayer<T extends IAudioElement> {
     options: IAudioElementOptions
   ) => Promise<void>;
   preload: (name: string, src: string, options: IAudioElementOptions) => void;
-  setElementOptions: (audio: T, options: IAudioElementOptions) => void;
+  setElementOptions: (
+    audio: IAudioElement,
+    options: IAudioElementOptions
+  ) => void;
 
   // Actions handlers
   play: (
@@ -57,6 +60,6 @@ export interface IAudioPlayer<T extends IAudioElement> {
   ) => Promise<void>;
   pause: () => void;
   resume: () => void;
-  fadeIn: (audio: T, onEnded: () => void) => Promise<void>;
-  fadeOut: (audio: T) => Promise<void>;
+  fadeIn: (audio: IAudioElement, onEnded: () => void) => Promise<void>;
+  fadeOut: (audio: IAudioElement) => Promise<void>;
 }

@@ -10,14 +10,14 @@ interface AudioElementConstructable<T> {
   new (src: string): T;
 }
 
-export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
-  AudioElement: AudioElementConstructable<T>;
+export class AudioPlayer implements IAudioPlayer {
+  AudioElement: AudioElementConstructable<IAudioElement>;
   current: string | null;
   options: IAudioPlayerOptions;
-  available: IAudioElements<T>;
+  available: IAudioElements;
 
   constructor(
-    AudioElement: AudioElementConstructable<T>,
+    AudioElement: AudioElementConstructable<IAudioElement>,
     options: IAudioPlayerOptions
   ) {
     this.options = options;
@@ -25,8 +25,6 @@ export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
     this.available = {};
 
     this.AudioElement = AudioElement;
-
-    console.log('AUDIO!');
   }
 
   updateOptions = (newOptions: IAudioPlayerOptions) => {
@@ -53,7 +51,7 @@ export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
       return;
     }
 
-    const data = await new Promise<T>((res) => {
+    const data = await new Promise<IAudioElement>((res) => {
       const audio = new this.AudioElement(src);
 
       this.setElementOptions(audio, options);
@@ -85,7 +83,7 @@ export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
     };
   };
 
-  setElementOptions = (audio: T, options: IAudioElementOptions) => {
+  setElementOptions = (audio: IAudioElement, options: IAudioElementOptions) => {
     (Object.keys(options) as Array<keyof typeof options>).forEach((key) => {
       if (key === 'loop') {
         audio[key] = options[key] || false;
@@ -155,7 +153,7 @@ export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
     }
   };
 
-  fadeIn = async (audio: T, onEnded?: () => void) => {
+  fadeIn = async (audio: IAudioElement, onEnded?: () => void) => {
     const maxVolume = audio.volume;
     let fadeInInterval: ReturnType<typeof setInterval>;
 
@@ -181,7 +179,7 @@ export class AudioPlayer<T extends IAudioElement> implements IAudioPlayer<T> {
     audio.volume = maxVolume;
   };
 
-  fadeOut = async (audio: T) => {
+  fadeOut = async (audio: IAudioElement) => {
     const maxVolume = audio.volume;
     let fadeOutInterval: ReturnType<typeof setInterval>;
 

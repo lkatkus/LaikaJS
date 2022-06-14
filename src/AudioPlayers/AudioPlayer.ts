@@ -93,7 +93,7 @@ export class AudioPlayer implements IAudioPlayer {
     });
   };
 
-  play = async (name: string, onEnded?: () => void, skipFade?: boolean) => {
+  play = async (name: string, onEnded?: () => void, skipFade = true) => {
     if (name === this.current) {
       return;
     }
@@ -129,7 +129,7 @@ export class AudioPlayer implements IAudioPlayer {
     }
   };
 
-  pause = () => {
+  pause = (skipFade = true) => {
     if (!this.current) {
       return;
     }
@@ -137,7 +137,11 @@ export class AudioPlayer implements IAudioPlayer {
     const currentElement = this.available[this.current];
 
     if (currentElement.isLoaded) {
-      this.fadeOut(currentElement.data);
+      if (skipFade) {
+        currentElement.data.pause();
+      } else {
+        this.fadeOut(currentElement.data);
+      }
     }
   };
 

@@ -1,5 +1,5 @@
 export { IGameConfig, Game } from './Game';
-export { WebGlRenderer, CanvasRenderer } from './Renderers';
+export { WebGlRenderer, CanvasRenderer, IColor } from './Renderers';
 export {
   IAudioElement,
   IAudioPlayerOptions,

@@ -2,6 +2,7 @@ import { ITile } from '../../LevelManager';
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SkyRenderer } from './SkyRenderer';
 
 export interface ICanvasRendererOptions {}
 
@@ -14,6 +15,7 @@ class CanvasRenderer {
   offsetY: number;
   worldSpaceMatrix: M3x3;
   bgRenderer: TilesRenderer;
+  skyRenderer: SkyRenderer;
 
   constructor(
     ctx: CanvasRenderingContext2D,
@@ -29,6 +31,10 @@ class CanvasRenderer {
     this.offsetX = 0;
     this.offsetY = 0;
   }
+
+  initSkyRenderer = () => {
+    this.skyRenderer = new SkyRenderer(this.ctx);
+  };
 
   initBackgroundRenderer = (
     texture: HTMLImageElement,
@@ -68,6 +74,10 @@ class CanvasRenderer {
 
   onAfterRender = () => {
     // @todo
+  };
+
+  renderSky = () => {
+    this.skyRenderer.render();
   };
 
   renderLevel = (tilesToRender: ITile[]) => {

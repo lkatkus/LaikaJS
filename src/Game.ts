@@ -122,6 +122,7 @@ export class Game {
     this.renderer.translate(this.camera.offsetX, this.camera.offsetY);
 
     this.level.onBeforeDraw(this.camera.offsetX, this.camera.offsetY);
+    this.level.drawSky(this.renderer.renderSky);
     this.level.drawBackground(this.renderer.renderLevel);
     this.level.drawStage(this.renderer.renderLevel);
 

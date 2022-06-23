@@ -102,6 +102,7 @@ class LevelManager {
   ) {
     this.setParams(config);
 
+    renderer.initSkyRenderer();
     renderer.initBackgroundRenderer(config.tileSheet.src, {
       size: this.spriteSize,
       tilesPerRow: config.tileSheet.cols,
@@ -318,6 +319,10 @@ class LevelManager {
     this.visibleRightColScaled = rightColScaled;
     this.visibleTopRowScale = topRowScaled;
     this.visibleBottomRowScale = bottomRowScale;
+  }
+
+  drawSky(drawFn: () => void) {
+    drawFn();
   }
 
   drawBackground(drawFn: IDrawFn) {

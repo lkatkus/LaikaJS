@@ -2,6 +2,7 @@ import { ITile } from '../../LevelManager';
 import { M3x3 } from '../utils';
 import { TilesRenderer } from './TilesRenderer';
 import { SpriteRenderer } from './SpriteRenderer';
+import { SkyRenderer } from './SkyRenderer';
 import { ITilesRendererOptions } from './TilesRenderer/TilesRenderer';
 
 interface IParallaxConfig {
@@ -25,6 +26,8 @@ class WebGlRenderer {
   worldSpaceMatrix: M3x3;
   scaleWorldSpaceMatrix: M3x3;
   bgRenderer: TilesRenderer;
+  skyRenderer: SkyRenderer;
+  bgColor: [number, number, number, number];
 
   constructor(gl: WebGLRenderingContext, options: IWebGlRendererOptions = {}) {
     const { drawingBufferWidth, drawingBufferHeight } = gl;
@@ -48,16 +51,20 @@ class WebGlRenderer {
       .transition(-1, 1)
       .scale(2 / this.screenWidth, -2 / this.screenHeight);
 
-    this.gl.clearColor(...(options.clearColor || [0, 0, 0, 0]));
-
+    this.renderSky = this.renderSky.bind(this);
     this.renderLevel = this.renderLevel.bind(this);
     this.renderSprite = this.renderSprite.bind(this);
 
-    this.initBackgroundRenderer = this.initBackgroundRenderer.bind(this);
     this.initSpriteRenderer = this.initSpriteRenderer.bind(this);
+    this.initSkyRenderer = this.initSkyRenderer.bind(this);
+    this.initBackgroundRenderer = this.initBackgroundRenderer.bind(this);
 
     this.offsetX = 0;
     this.offsetY = 0;
+  }
+
+  initSkyRenderer() {
+    this.skyRenderer = new SkyRenderer(this.gl);
   }
 
   initBackgroundRenderer(
@@ -90,6 +97,7 @@ class WebGlRenderer {
   onBeforeRender() {
     const { gl, screenWidth, screenHeight } = this;
 
+    gl.clearColor(0, 0, 0, 0);
     gl.viewport(0, 0, screenWidth, screenHeight);
     gl.clear(gl.COLOR_BUFFER_BIT);
 
@@ -104,6 +112,10 @@ class WebGlRenderer {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     gl.endFrameEXP && gl.endFrameEXP(); // Required for react native app using expo gl-view
+  }
+
+  renderSky() {
+    this.skyRenderer.render();
   }
 
   renderLevel(tilesToRender: ITile[]) {
